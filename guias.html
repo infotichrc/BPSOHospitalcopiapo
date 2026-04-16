@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guías | BPSO Hospital Regional de Copiapó</title>
+  <meta name="description" content="Guías de buenas prácticas del programa BPSO y RNAO del Hospital Regional de Copiapó" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="guias">
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="assets/logo-rnao.png" alt="Logo RNAO" />
+        <div class="brand-copy">
+          <strong>RNAO · BPSO</strong>
+          <small>Hospital Regional de Copiapó</small>
+        </div>
+      </a>
+      <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">☰</button>
+      <nav class="site-nav" id="site-nav">
+        <a href="index.html">Inicio</a>
+        <a href="noticias.html">Noticias</a>
+        <a href="capacitaciones.html">Capacitaciones</a>
+        <a href="guias.html">Guías</a>
+        <a href="login.html">Login</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-main">
+    <section class="page-hero simple-page">
+      <div class="container">
+        <span class="eyebrow">Descargas</span>
+        <h1>Guías de buenas prácticas</h1>
+        <p>Documentos descargables y material de apoyo para la implementación del programa en el hospital.</p>
+      </div>
+    </section>
+    <section class="section">
+      <div class="container">
+        <div id="guides-grid" class="guides-grid"></div>
+        <p id="guides-empty" class="empty-state show">Aún no hay guías disponibles.</p>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <div class="container footer-wrap">
+      <p>RNAO · BPSO · Hospital Regional de Copiapó</p>
+      <a href="login.html">Login</a>
+    </div>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>

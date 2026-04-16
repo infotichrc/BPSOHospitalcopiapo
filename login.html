@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | BPSO Hospital Regional de Copiapó</title>
+  <meta name="description" content="Acceso y gestión de publicaciones BPSO Hospital Regional de Copiapó" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="login">
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="assets/logo-rnao.png" alt="Logo RNAO" />
+        <div class="brand-copy">
+          <strong>RNAO · BPSO</strong>
+          <small>Hospital Regional de Copiapó</small>
+        </div>
+      </a>
+      <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">☰</button>
+      <nav class="site-nav" id="site-nav">
+        <a href="index.html">Inicio</a>
+        <a href="noticias.html">Noticias</a>
+        <a href="capacitaciones.html">Capacitaciones</a>
+        <a href="guias.html">Guías</a>
+        <a href="login.html">Login</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-main">
+    <section class="page-hero simple-page">
+      <div class="container">
+        <span class="eyebrow">Acceso</span>
+        <h1>Login y gestión de contenidos</h1>
+        <p>Accede con tu cuenta para publicar noticias, capacitaciones y guías de buenas prácticas.</p>
+      </div>
+    </section>
+    <section class="section">
+      <div class="container">
+        <div class="section-head compact">
+          <div class="section-title-small">
+            <span class="eyebrow">Autenticación</span>
+            <h2>Ingreso de editoras</h2>
+          </div>
+          <div id="session-badge" class="session-badge">Sin sesión</div>
+        </div>
+
+        <div id="alert-box" class="alert hidden"></div>
+
+        <div class="admin-grid">
+          <div class="content-card">
+            <h3>Login</h3>
+            <form id="login-form" class="stack-form">
+              <label>
+                <span>Correo institucional o registrado</span>
+                <input id="login-email" type="email" placeholder="correo@hospital.cl" required />
+              </label>
+              <label>
+                <span>Contraseña</span>
+                <input id="login-password" type="password" placeholder="••••••••" required />
+              </label>
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Iniciar sesión</button>
+                <button class="btn btn-secondary" id="logout-btn" type="button">Cerrar sesión</button>
+              </div>
+              <button class="btn btn-outline forgot-btn" id="forgot-password-btn" type="button">Olvidé mi contraseña</button>
+            </form>
+          </div>
+
+          <div class="content-card">
+            <h3>Información del módulo</h3>
+            <ul class="status-list">
+              <li><strong>Supabase URL:</strong> <span id="project-url-view"></span></li>
+              <li><strong>Bucket imágenes:</strong> bpso-images</li>
+              <li><strong>Bucket guías:</strong> bpso-guides</li>
+              <li><strong>Recuperación:</strong> habilitada mediante correo y página separada.</li>
+            </ul>
+            <p class="muted-note">
+              Usa el botón “Olvidé mi contraseña” para solicitar recuperación. Si no llega el correo, revisa bandeja de spam o políticas del dominio de destino.
+            </p>
+          </div>
+        </div>
+
+        <div id="admin-panel" class="admin-panel hidden">
+          <div class="section-head compact top-gap">
+            <div class="section-title-small">
+              <span class="eyebrow">Publicaciones</span>
+              <h2>Gestión de contenidos</h2>
+            </div>
+          </div>
+
+          <div class="publish-grid">
+            <div class="content-card">
+              <h3>Publicar noticia</h3>
+              <form id="news-form" class="stack-form">
+                <label>
+                  <span>Título</span>
+                  <input name="title" type="text" required />
+                </label>
+                <label>
+                  <span>Resumen</span>
+                  <textarea name="summary" rows="3"></textarea>
+                </label>
+                <label>
+                  <span>Contenido</span>
+                  <textarea name="content" rows="7" required></textarea>
+                </label>
+                <label>
+                  <span>Imagen</span>
+                  <input name="image" type="file" accept="image/*" />
+                </label>
+                <p class="field-help">Usar nombres de archivo simples, idealmente sin tildes ni caracteres especiales.</p>
+                <button class="btn btn-primary" type="submit">Publicar noticia</button>
+              </form>
+            </div>
+
+            <div class="content-card">
+              <h3>Publicar capacitación</h3>
+              <form id="training-form" class="stack-form">
+                <label>
+                  <span>Título</span>
+                  <input name="title" type="text" required />
+                </label>
+                <label>
+                  <span>Fecha actividad</span>
+                  <input name="event_date" type="date" />
+                </label>
+                <label>
+                  <span>Resumen</span>
+                  <textarea name="summary" rows="3"></textarea>
+                </label>
+                <label>
+                  <span>Contenido</span>
+                  <textarea name="content" rows="7" required></textarea>
+                </label>
+                <label>
+                  <span>Imagen</span>
+                  <input name="image" type="file" accept="image/*" />
+                </label>
+                <p class="field-help">Usar nombres de archivo simples, idealmente sin tildes ni caracteres especiales.</p>
+                <button class="btn btn-primary" type="submit">Publicar capacitación</button>
+              </form>
+            </div>
+
+            <div class="content-card full-span">
+              <h3>Publicar guía de buenas prácticas</h3>
+              <form id="guide-form" class="stack-form">
+                <label>
+                  <span>Título</span>
+                  <input name="title" type="text" required />
+                </label>
+                <label>
+                  <span>Descripción</span>
+                  <textarea name="description" rows="4"></textarea>
+                </label>
+                <div class="dual-inputs">
+                  <label>
+                    <span>Portada / imagen</span>
+                    <input name="cover_image" type="file" accept="image/*" />
+                  </label>
+                  <label>
+                    <span>Archivo PDF o documento</span>
+                    <input name="pdf_file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx" required />
+                  </label>
+                </div>
+                <p class="field-help">Usar nombres de archivo simples, idealmente sin tildes ni caracteres especiales.</p>
+                <button class="btn btn-primary" type="submit">Publicar guía</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <div class="container footer-wrap">
+      <p>RNAO · BPSO · Hospital Regional de Copiapó</p>
+      <a href="index.html">Volver al inicio</a>
+    </div>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>

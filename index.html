@@ -3,261 +3,200 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BPSO Hospital Copiapó</title>
-  <meta name="description" content="Portal BPSO del Hospital Regional de Copiapó" />
+  <title>BPSO | Hospital Regional de Copiapó</title>
+  <meta name="description" content="Portal BPSO y RNAO del Hospital Regional de Copiapó" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body>
-  <div class="bg-orb orb-1"></div>
-  <div class="bg-orb orb-2"></div>
-
+<body data-page="index">
   <header class="site-header">
     <div class="container nav-wrap">
-      <a class="brand" href="#top">
-        <span class="brand-mark">B</span>
-        <div>
-          <strong>BPSO</strong>
+      <a class="brand" href="index.html" aria-label="Inicio BPSO">
+        <img class="brand-logo" src="assets/logo-rnao.png" alt="Logo RNAO" />
+        <div class="brand-copy">
+          <strong>RNAO · BPSO</strong>
           <small>Hospital Regional de Copiapó</small>
         </div>
       </a>
-
-      <nav class="site-nav">
-        <a href="#inicio">Inicio</a>
-        <a href="#que-es">Qué es BPSO</a>
-        <a href="#noticias">Noticias</a>
-        <a href="#capacitaciones">Capacitaciones</a>
-        <a href="#guias">Buenas prácticas</a>
-        <a href="#admin">Admin</a>
+      <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">☰</button>
+      <nav class="site-nav" id="site-nav">
+        <a href="index.html">Inicio</a>
+        <a href="noticias.html">Noticias</a>
+        <a href="capacitaciones.html">Capacitaciones</a>
+        <a href="guias.html">Guías</a>
+        <a href="login.html">Login</a>
       </nav>
     </div>
   </header>
 
-  <main id="top">
-    <section id="inicio" class="hero">
-      <div class="container hero-grid">
-        <div>
-          <span class="eyebrow">Modelo independiente del sitio actual</span>
-          <h1>Portal BPSO moderno, publicable y administrable.</h1>
-          <p class="hero-copy">
-            Este prototipo separa el frontend del hosting antiguo y deja las publicaciones en Supabase,
-            para que noticias, capacitaciones y guías se administren sin tocar el WordPress legado.
-          </p>
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="#admin">Entrar a administrar</a>
-            <a class="btn btn-secondary" href="#noticias">Ver contenido</a>
-          </div>
+  <main>
+    <section class="hero hero-home">
+      <div class="container hero-content">
+        <div class="hero-badge">Centros Comprometidos con la Excelencia en el Cuidado</div>
+        <h1>RNAO y BPSO en el Hospital Regional de Copiapó</h1>
+        <p>
+          Portal institucional para difundir noticias, capacitaciones, guías de buenas prácticas
+          y el avance del programa basado en evidencia clínica.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="noticias.html">Ver noticias</a>
+          <a class="btn btn-secondary" href="#que-es-rnao">Conocer el programa</a>
         </div>
+      </div>
+    </section>
 
-        <aside class="hero-card glass">
-          <h3>Base del proyecto</h3>
-          <ul class="feature-list">
-            <li>Noticias con imagen</li>
-            <li>Capacitaciones con texto e imagen</li>
-            <li>Guías descargables</li>
-            <li>Login con usuario y contraseña</li>
-            <li>Frontend listo para GitHub Pages</li>
+    <section class="section section-intro">
+      <div class="container quick-grid">
+        <article class="info-card">
+          <h3>Noticias</h3>
+          <p>Difusión de hitos, avances, jornadas y actividades del programa.</p>
+          <a href="noticias.html">Ir a noticias</a>
+        </article>
+        <article class="info-card">
+          <h3>Capacitaciones</h3>
+          <p>Registro de actividades formativas, talleres y acciones de transferencia de evidencia.</p>
+          <a href="capacitaciones.html">Ir a capacitaciones</a>
+        </article>
+        <article class="info-card">
+          <h3>Guías de buenas prácticas</h3>
+          <p>Acceso a documentos descargables y material de apoyo para la implementación clínica.</p>
+          <a href="guias.html">Ir a guías</a>
+        </article>
+      </div>
+    </section>
+
+    <section id="que-es-rnao" class="section">
+      <div class="container content-grid">
+        <div class="section-title">
+          <span class="eyebrow">Marco institucional</span>
+          <h2>¿Qué es RNAO?</h2>
+        </div>
+        <div class="content-card">
+          <p>
+            Es la Asociación de Enfermeras Registradas de Ontario, Canadá. Esta agrupación ha sido una voz fuerte y creíble que ha llevado la profesión a influir en las políticas públicas de salud y promover la excelencia de la práctica clínica, a través de la creación de guías de buenas prácticas basadas en la mejor evidencia.
+          </p>
+          <p>
+            Bajo este enfoque, la asociación ha creado el programa de buenas prácticas BPSO.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section alt">
+      <div class="container content-grid">
+        <div class="section-title">
+          <span class="eyebrow">Excelencia en el cuidado</span>
+          <h2>¿Qué son las BPSO?</h2>
+        </div>
+        <div class="content-card">
+          <p>
+            Los BPSO o Centros Comprometidos con la Excelencia en el Cuidado son instituciones generadoras de buenas prácticas basadas en la mejor evidencia científica.
+          </p>
+          <ul class="bullet-list">
+            <li>Implementar y evaluar las guías de buenas prácticas.</li>
+            <li>Sistematizar las buenas prácticas de cuidado.</li>
+            <li>Promover la generación de conocimiento y evidencia.</li>
           </ul>
-        </aside>
+        </div>
       </div>
     </section>
 
-    <section id="que-es" class="section">
-      <div class="container two-col">
-        <div>
-          <span class="section-tag">Qué es BPSO</span>
-          <h2>Un espacio para fortalecer la evidencia, la mejora continua y las buenas prácticas.</h2>
+    <section class="section">
+      <div class="container content-grid">
+        <div class="section-title">
+          <span class="eyebrow">Guías</span>
+          <h2>¿Qué son las guías de buenas prácticas?</h2>
         </div>
-        <div class="glass text-card">
+        <div class="content-card">
           <p>
-            BPSO reúne noticias, actividades formativas y materiales descargables que apoyan la difusión
-            de iniciativas, lineamientos y experiencias de implementación dentro del hospital.
+            Son recomendaciones desarrolladas de forma sistemática, basadas en la mejor evidencia disponible, con el objetivo de ayudar al equipo multidisciplinario a tomar las mejores decisiones.
+          </p>
+          <div class="mini-grid">
+            <div class="mini-card">
+              <h4>Guía 1</h4>
+              <p>Valoración del riesgo y prevención de lesiones por presión.</p>
+            </div>
+            <div class="mini-card">
+              <h4>Guía 2</h4>
+              <p>Prevención de caídas y disminución de lesiones derivadas de las caídas.</p>
+            </div>
+            <div class="mini-card">
+              <h4>Guía 3</h4>
+              <p>Cuidado y mantenimiento de accesos vasculares para reducir complicaciones.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section alt">
+      <div class="container content-grid">
+        <div class="section-title">
+          <span class="eyebrow">Historia local</span>
+          <h2>¿Cómo llega RNAO a nuestro hospital?</h2>
+        </div>
+        <div class="content-card">
+          <p>
+            En diciembre de 2017, la ministra de Salud Carmen Castillo, acompañada de la subsecretaria de Redes Asistenciales Gisela Alarcón, firmaron un convenio de cooperación internacional con la Registered Nurse Association of Ontario de Canadá.
           </p>
           <p>
-            La idea de este portal es dar visibilidad al trabajo del módulo, dejar trazabilidad del contenido
-            y facilitar el acceso a documentos y recursos de forma simple, rápida y ordenada.
+            Este acuerdo forma parte de una alianza entre RNAO y el Ministerio de Salud de Chile para llevar la práctica de enfermería basada en evidencia y fortalecer la atención entregada a la población.
+          </p>
+          <p>
+            La subdirectora de Gestión del Cuidado, Sra. Eva Wilson Lagos, presentó la solicitud para pertenecer a este grupo de centros que buscan obtener certificación internacional como BPSO. El hospital fue seleccionado durante el primer semestre de 2022 junto a otras 9 instituciones para ser centro candidato a la excelencia del cuidado durante 3 años.
           </p>
         </div>
       </div>
     </section>
 
-    <section id="noticias" class="section">
-      <div class="container section-head">
-        <div>
-          <span class="section-tag">Noticias</span>
-          <h2>Publicaciones recientes</h2>
-        </div>
-      </div>
-      <div class="container">
-        <div id="news-grid" class="cards-grid"></div>
-        <p id="news-empty" class="empty-state">Aún no hay noticias publicadas.</p>
-      </div>
-    </section>
+    <section class="section">
+      <div class="container split-panels">
+        <article class="content-card">
+          <span class="eyebrow">Liderazgo clínico</span>
+          <h2>¿Quiénes son los champions de la RNAO?</h2>
+          <p>
+            Los champions o líderes clínicos son funcionarios y funcionarias de diferentes servicios clínicos y unidades, capacitados en el Programa de Guías de Buenas Prácticas.
+          </p>
+          <p>
+            Su rol fundamental es transferir la evidencia a la práctica clínica, sensibilizar y motivar a los demás equipos.
+          </p>
+        </article>
 
-    <section id="capacitaciones" class="section alt-section">
-      <div class="container section-head">
-        <div>
-          <span class="section-tag">Capacitaciones</span>
-          <h2>Registro de actividades formativas</h2>
-        </div>
-      </div>
-      <div class="container">
-        <div id="trainings-grid" class="cards-grid"></div>
-        <p id="trainings-empty" class="empty-state">Aún no hay capacitaciones publicadas.</p>
-      </div>
-    </section>
-
-    <section id="guias" class="section">
-      <div class="container section-head">
-        <div>
-          <span class="section-tag">Buenas prácticas</span>
-          <h2>Guías y documentos descargables</h2>
-        </div>
-      </div>
-      <div class="container">
-        <div id="guides-grid" class="guides-grid"></div>
-        <p id="guides-empty" class="empty-state">Aún no hay guías disponibles.</p>
+        <article class="content-card">
+          <span class="eyebrow">Gobernanza</span>
+          <h2>Comité de implementación</h2>
+          <p>
+            Está conformado por champions de diferentes servicios clínicos y/o unidades, quienes se reúnen de forma periódica para planificar estrategias de avance e implementación de las guías de buenas prácticas.
+          </p>
+          <p class="muted-note">
+            Este espacio puede ampliarse más adelante para incorporar otros comités o equipos de trabajo según la definición institucional.
+          </p>
+        </article>
       </div>
     </section>
 
-    <section id="admin" class="section admin-section">
-      <div class="container">
-        <div class="section-head admin-head">
-          <div>
-            <span class="section-tag">Administración</span>
-            <h2>Login y publicaciones</h2>
-          </div>
-          <div id="session-badge" class="session-badge">Sin sesión</div>
+    <section class="section cta-section">
+      <div class="container cta-card">
+        <div>
+          <span class="eyebrow">Acceso</span>
+          <h2>Gestión de contenidos y acceso de editoras</h2>
+          <p>Ingresa al módulo de login para publicar noticias, capacitaciones y guías de buenas prácticas.</p>
         </div>
-
-        <div id="alert-box" class="alert hidden"></div>
-
-        <div class="admin-grid">
-          <div class="glass admin-card">
-            <h3>Acceso</h3>
-            <form id="login-form" class="stack-form">
-              <label>
-                <span>Correo</span>
-                <input id="login-email" type="email" placeholder="correo@hospital.cl" required />
-              </label>
-              <label>
-                <span>Contraseña</span>
-                <input id="login-password" type="password" placeholder="••••••••" required />
-              </label>
-              <div class="form-actions">
-                <button class="btn btn-primary" type="submit">Iniciar sesión</button>
-                <button class="btn btn-ghost" id="logout-btn" type="button">Cerrar sesión</button>
-              </div>
-              <button class="btn btn-ghost forgot-btn" id="forgot-password-btn" type="button">Olvidé mi contraseña</button>
-            </form>
-          </div>
-
-          <div class="glass admin-card">
-            <h3>Estado del proyecto</h3>
-            <ul class="status-list">
-              <li><strong>Supabase URL:</strong> <span id="project-url-view"></span></li>
-              <li><strong>Bucket imágenes:</strong> bpso-images</li>
-              <li><strong>Bucket guías:</strong> bpso-guides</li>
-              <li><strong>Modo:</strong> Sitio estático + backend Supabase</li>
-            </ul>
-            <p class="muted small-note">
-              Si las imágenes o PDFs no cargan en la web pública, revisa primero que los buckets estén configurados como públicos.
-            </p>
-          </div>
-        </div>
-
-        <div id="admin-panel" class="admin-panel hidden">
-          <div class="form-grid">
-            <div class="glass admin-card">
-              <h3>Publicar noticia</h3>
-              <form id="news-form" class="stack-form">
-                <label>
-                  <span>Título</span>
-                  <input name="title" type="text" required />
-                </label>
-                <label>
-                  <span>Resumen</span>
-                  <textarea name="summary" rows="3"></textarea>
-                </label>
-                <label>
-                  <span>Contenido</span>
-                  <textarea name="content" rows="7" required></textarea>
-                </label>
-                <label>
-                  <span>Imagen</span>
-                  <input name="image" type="file" accept="image/*" />
-                </label>
-                <button class="btn btn-primary" type="submit">Publicar noticia</button>
-              </form>
-            </div>
-
-            <div class="glass admin-card">
-              <h3>Publicar capacitación</h3>
-              <form id="training-form" class="stack-form">
-                <label>
-                  <span>Título</span>
-                  <input name="title" type="text" required />
-                </label>
-                <label>
-                  <span>Fecha actividad</span>
-                  <input name="event_date" type="date" />
-                </label>
-                <label>
-                  <span>Resumen</span>
-                  <textarea name="summary" rows="3"></textarea>
-                </label>
-                <label>
-                  <span>Contenido</span>
-                  <textarea name="content" rows="7" required></textarea>
-                </label>
-                <label>
-                  <span>Imagen</span>
-                  <input name="image" type="file" accept="image/*" />
-                </label>
-                <button class="btn btn-primary" type="submit">Publicar capacitación</button>
-              </form>
-            </div>
-
-            <div class="glass admin-card full-span">
-              <h3>Publicar guía de buenas prácticas</h3>
-              <form id="guide-form" class="stack-form">
-                <label>
-                  <span>Título</span>
-                  <input name="title" type="text" required />
-                </label>
-                <label>
-                  <span>Descripción</span>
-                  <textarea name="description" rows="4"></textarea>
-                </label>
-                <div class="dual-inputs">
-                  <label>
-                    <span>Portada / imagen</span>
-                    <input name="cover_image" type="file" accept="image/*" />
-                  </label>
-                  <label>
-                    <span>Archivo PDF o documento</span>
-                    <input name="pdf_file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx" required />
-                  </label>
-                </div>
-                <button class="btn btn-primary" type="submit">Publicar guía</button>
-              </form>
-            </div>
-          </div>
-        </div>
+        <a class="btn btn-primary" href="login.html">Ir a login</a>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
     <div class="container footer-wrap">
-      <p>BPSO · Prototipo funcional para Hospital Regional de Copiapó</p>
-      <a href="#top">Volver arriba</a>
+      <p>RNAO · BPSO · Hospital Regional de Copiapó</p>
+      <a href="login.html">Login</a>
     </div>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
 </body>
 </html>
