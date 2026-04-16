@@ -34,6 +34,7 @@
     projectUrlView: document.getElementById('project-url-view'),
     loginForm: document.getElementById('login-form'),
     logoutBtn: document.getElementById('logout-btn'),
+    forgotPasswordBtn: document.getElementById('forgot-password-btn'),
     loginEmail: document.getElementById('login-email'),
     loginPassword: document.getElementById('login-password'),
     adminPanel: document.getElementById('admin-panel'),
@@ -239,6 +240,13 @@
     if (error) throw error;
   }
 
+  async function sendPasswordRecovery(email) {
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://bpso.hospitalcopiapo.cl/reset-password'
+    });
+    if (error) throw error;
+  }
+
   async function uploadImage(file, folder = 'general') {
     if (!file) return null;
 
@@ -370,6 +378,25 @@
         } catch (error) {
           console.error(error);
           showAlert(`Error al cerrar sesión: ${error.message}`, 'error');
+        }
+      });
+    }
+
+    if (els.forgotPasswordBtn) {
+      els.forgotPasswordBtn.addEventListener('click', async () => {
+        try {
+          const email = els.loginEmail?.value?.trim() || '';
+
+          if (!email) {
+            showAlert('Ingresa tu correo primero para enviar la recuperación.', 'error');
+            return;
+          }
+
+          await sendPasswordRecovery(email);
+          showAlert('Correo de recuperación enviado. Revisa tu bandeja de entrada y correo no deseado.');
+        } catch (error) {
+          console.error(error);
+          showAlert(`Error enviando recuperación: ${error.message}`, 'error');
         }
       });
     }
