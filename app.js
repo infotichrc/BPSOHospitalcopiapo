@@ -8,15 +8,21 @@
   const SUPABASE_URL = 'https://wedhcjlrlwdjoneahodl.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_QvlFvKMlHZsL1tP_UZfSvw_a4A6ejrQ';
 
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+    console.error('Supabase CDN no cargó correctamente.');
+    return;
+  }
+
+  const { createClient } = window.supabase;
+  const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
   window.bpso = {
-    supabase: supabase
+    supabase: supabaseClient
   };
 
   console.log('BPSO app cargada correctamente');
+  console.log('Supabase client inicializado:', !!supabaseClient);
 
-  // aquí sigue todo tu código...
   const state = {
     session: null,
     news: [],
@@ -45,6 +51,7 @@
   };
 
   function showAlert(message, type = 'success') {
+    if (!els.alertBox) return;
     els.alertBox.textContent = message;
     els.alertBox.className = `alert ${type}`;
     els.alertBox.classList.remove('hidden');
@@ -87,18 +94,24 @@
   }
 
   function toggleEmptyState(element, emptyElement, hasItems) {
+    if (!element || !emptyElement) return;
     emptyElement.classList.toggle('show', !hasItems);
     element.style.display = hasItems ? 'grid' : 'none';
   }
 
   function setSessionUI(session) {
     const email = session?.user?.email || null;
-    state.session = session;
+    state.session = session || null;
 
-    els.sessionBadge.textContent = email ? `Sesión activa: ${email}` : 'Sin sesión';
-    els.adminPanel.classList.toggle('hidden', !email);
+    if (els.sessionBadge) {
+      els.sessionBadge.textContent = email ? `Sesión activa: ${email}` : 'Sin sesión';
+    }
 
-    if (email) {
+    if (els.adminPanel) {
+      els.adminPanel.classList.toggle('hidden', !email);
+    }
+
+    if (email && els.loginEmail && els.loginPassword) {
       els.loginEmail.value = email;
       els.loginPassword.value = '';
     }
@@ -107,7 +120,7 @@
   function renderNews() {
     const items = state.news;
     toggleEmptyState(els.newsGrid, els.newsEmpty, items.length > 0);
-    if (!items.length) return;
+    if (!els.newsGrid || !items.length) return;
 
     els.newsGrid.innerHTML = items.map(item => `
       <article class="glass card">
@@ -117,7 +130,7 @@
         <div class="card-body">
           <div class="card-meta">${escapeHtml(formatDate(item.published_at || item.created_at))}</div>
           <h3>${escapeHtml(item.title)}</h3>
-          <p>${escapeHtml(item.summary || item.content.slice(0, 180) + '...')}</p>
+          <p>${escapeHtml(item.summary || ((item.content || '').slice(0, 180) + '...'))}</p>
         </div>
       </article>
     `).join('');
@@ -126,7 +139,7 @@
   function renderTrainings() {
     const items = state.trainings;
     toggleEmptyState(els.trainingsGrid, els.trainingsEmpty, items.length > 0);
-    if (!items.length) return;
+    if (!els.trainingsGrid || !items.length) return;
 
     els.trainingsGrid.innerHTML = items.map(item => `
       <article class="glass card">
@@ -136,7 +149,7 @@
         <div class="card-body">
           <div class="card-meta">${escapeHtml(formatDate(item.event_date || item.published_at || item.created_at))}</div>
           <h3>${escapeHtml(item.title)}</h3>
-          <p>${escapeHtml(item.summary || item.content.slice(0, 180) + '...')}</p>
+          <p>${escapeHtml(item.summary || ((item.content || '').slice(0, 180) + '...'))}</p>
         </div>
       </article>
     `).join('');
@@ -145,7 +158,7 @@
   function renderGuides() {
     const items = state.guides;
     toggleEmptyState(els.guidesGrid, els.guidesEmpty, items.length > 0);
-    if (!items.length) return;
+    if (!els.guidesGrid || !items.length) return;
 
     els.guidesGrid.innerHTML = items.map(item => `
       <article class="glass card">
@@ -165,7 +178,7 @@
   }
 
   async function fetchNews() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('news')
       .select('*')
       .eq('status', 'published')
@@ -178,7 +191,7 @@
   }
 
   async function fetchTrainings() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('trainings')
       .select('*')
       .eq('status', 'published')
@@ -191,7 +204,7 @@
   }
 
   async function fetchGuides() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('guides')
       .select('*')
       .eq('status', 'published')
@@ -212,13 +225,17 @@
   }
 
   async function loginUser(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+
     if (error) throw error;
     return data;
   }
 
   async function logoutUser() {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabaseClient.auth.signOut();
     if (error) throw error;
   }
 
@@ -226,7 +243,8 @@
     if (!file) return null;
 
     const fileName = `${folder}/${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
-    const { error: uploadError } = await supabase.storage
+
+    const { error: uploadError } = await supabaseClient.storage
       .from('bpso-images')
       .upload(fileName, file, {
         cacheControl: '3600',
@@ -235,7 +253,7 @@
 
     if (uploadError) throw uploadError;
 
-    const { data } = supabase.storage
+    const { data } = supabaseClient.storage
       .from('bpso-images')
       .getPublicUrl(fileName);
 
@@ -246,7 +264,8 @@
     if (!file) throw new Error('Debes seleccionar un archivo de guía.');
 
     const fileName = `guides/${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
-    const { error: uploadError } = await supabase.storage
+
+    const { error: uploadError } = await supabaseClient.storage
       .from('bpso-guides')
       .upload(fileName, file, {
         cacheControl: '3600',
@@ -255,7 +274,7 @@
 
     if (uploadError) throw uploadError;
 
-    const { data } = supabase.storage
+    const { data } = supabaseClient.storage
       .from('bpso-guides')
       .getPublicUrl(fileName);
 
@@ -263,7 +282,7 @@
   }
 
   async function createNews({ title, summary, content, imageFile }) {
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
     if (userError || !userData?.user) throw new Error('No hay usuario autenticado.');
 
     let imageUrl = null;
@@ -280,12 +299,12 @@
       author_id: userData.user.id
     };
 
-    const { error } = await supabase.from('news').insert([payload]);
+    const { error } = await supabaseClient.from('news').insert([payload]);
     if (error) throw error;
   }
 
   async function createTraining({ title, summary, content, imageFile, eventDate }) {
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
     if (userError || !userData?.user) throw new Error('No hay usuario autenticado.');
 
     let imageUrl = null;
@@ -302,12 +321,12 @@
       author_id: userData.user.id
     };
 
-    const { error } = await supabase.from('trainings').insert([payload]);
+    const { error } = await supabaseClient.from('trainings').insert([payload]);
     if (error) throw error;
   }
 
   async function createGuide({ title, description, pdfFile, coverImageFile }) {
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
     if (userError || !userData?.user) throw new Error('No hay usuario autenticado.');
 
     const fileUrl = await uploadGuide(pdfFile);
@@ -322,120 +341,130 @@
       author_id: userData.user.id
     };
 
-    const { error } = await supabase.from('guides').insert([payload]);
+    const { error } = await supabaseClient.from('guides').insert([payload]);
     if (error) throw error;
   }
 
   function bindEvents() {
-    els.loginForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
+    if (els.loginForm) {
+      els.loginForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
 
-      try {
-        const email = els.loginEmail.value.trim();
-        const password = els.loginPassword.value;
-        await loginUser(email, password);
-        showAlert('Sesión iniciada correctamente.');
-      } catch (error) {
-        console.error(error);
-        showAlert(`Error al iniciar sesión: ${error.message}`, 'error');
-      }
-    });
+        try {
+          const email = els.loginEmail.value.trim();
+          const password = els.loginPassword.value;
+          await loginUser(email, password);
+          showAlert('Sesión iniciada correctamente.');
+        } catch (error) {
+          console.error(error);
+          showAlert(`Error al iniciar sesión: ${error.message}`, 'error');
+        }
+      });
+    }
 
-    els.logoutBtn.addEventListener('click', async () => {
-      try {
-        await logoutUser();
-        showAlert('Sesión cerrada correctamente.');
-      } catch (error) {
-        console.error(error);
-        showAlert(`Error al cerrar sesión: ${error.message}`, 'error');
-      }
-    });
+    if (els.logoutBtn) {
+      els.logoutBtn.addEventListener('click', async () => {
+        try {
+          await logoutUser();
+          showAlert('Sesión cerrada correctamente.');
+        } catch (error) {
+          console.error(error);
+          showAlert(`Error al cerrar sesión: ${error.message}`, 'error');
+        }
+      });
+    }
 
-    els.newsForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const form = event.currentTarget;
-      const submitButton = form.querySelector('button[type="submit"]');
-      submitButton.disabled = true;
-      submitButton.textContent = 'Publicando...';
+    if (els.newsForm) {
+      els.newsForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Publicando...';
 
-      try {
-        await createNews({
-          title: form.title.value.trim(),
-          summary: form.summary.value.trim(),
-          content: form.content.value.trim(),
-          imageFile: form.image.files[0] || null
-        });
+        try {
+          await createNews({
+            title: form.title.value.trim(),
+            summary: form.summary.value.trim(),
+            content: form.content.value.trim(),
+            imageFile: form.image.files[0] || null
+          });
 
-        form.reset();
-        showAlert('Noticia publicada correctamente.');
-        await fetchNews();
-      } catch (error) {
-        console.error(error);
-        showAlert(`Error publicando noticia: ${error.message}`, 'error');
-      } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Publicar noticia';
-      }
-    });
+          form.reset();
+          showAlert('Noticia publicada correctamente.');
+          await fetchNews();
+        } catch (error) {
+          console.error(error);
+          showAlert(`Error publicando noticia: ${error.message}`, 'error');
+        } finally {
+          submitButton.disabled = false;
+          submitButton.textContent = 'Publicar noticia';
+        }
+      });
+    }
 
-    els.trainingForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const form = event.currentTarget;
-      const submitButton = form.querySelector('button[type="submit"]');
-      submitButton.disabled = true;
-      submitButton.textContent = 'Publicando...';
+    if (els.trainingForm) {
+      els.trainingForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Publicando...';
 
-      try {
-        await createTraining({
-          title: form.title.value.trim(),
-          summary: form.summary.value.trim(),
-          content: form.content.value.trim(),
-          eventDate: form.event_date.value || null,
-          imageFile: form.image.files[0] || null
-        });
+        try {
+          await createTraining({
+            title: form.title.value.trim(),
+            summary: form.summary.value.trim(),
+            content: form.content.value.trim(),
+            eventDate: form.event_date.value || null,
+            imageFile: form.image.files[0] || null
+          });
 
-        form.reset();
-        showAlert('Capacitación publicada correctamente.');
-        await fetchTrainings();
-      } catch (error) {
-        console.error(error);
-        showAlert(`Error publicando capacitación: ${error.message}`, 'error');
-      } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Publicar capacitación';
-      }
-    });
+          form.reset();
+          showAlert('Capacitación publicada correctamente.');
+          await fetchTrainings();
+        } catch (error) {
+          console.error(error);
+          showAlert(`Error publicando capacitación: ${error.message}`, 'error');
+        } finally {
+          submitButton.disabled = false;
+          submitButton.textContent = 'Publicar capacitación';
+        }
+      });
+    }
 
-    els.guideForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const form = event.currentTarget;
-      const submitButton = form.querySelector('button[type="submit"]');
-      submitButton.disabled = true;
-      submitButton.textContent = 'Publicando...';
+    if (els.guideForm) {
+      els.guideForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Publicando...';
 
-      try {
-        await createGuide({
-          title: form.title.value.trim(),
-          description: form.description.value.trim(),
-          pdfFile: form.pdf_file.files[0] || null,
-          coverImageFile: form.cover_image.files[0] || null
-        });
+        try {
+          await createGuide({
+            title: form.title.value.trim(),
+            description: form.description.value.trim(),
+            pdfFile: form.pdf_file.files[0] || null,
+            coverImageFile: form.cover_image.files[0] || null
+          });
 
-        form.reset();
-        showAlert('Guía publicada correctamente.');
-        await fetchGuides();
-      } catch (error) {
-        console.error(error);
-        showAlert(`Error publicando guía: ${error.message}`, 'error');
-      } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Publicar guía';
-      }
-    });
+          form.reset();
+          showAlert('Guía publicada correctamente.');
+          await fetchGuides();
+        } catch (error) {
+          console.error(error);
+          showAlert(`Error publicando guía: ${error.message}`, 'error');
+        } finally {
+          submitButton.disabled = false;
+          submitButton.textContent = 'Publicar guía';
+        }
+      });
+    }
   }
 
   function subscribeRealtime() {
-    supabase
+    supabaseClient
       .channel('bpso-content-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'news' }, fetchNews)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'trainings' }, fetchTrainings)
@@ -444,7 +473,7 @@
   }
 
   async function initAuth() {
-    const { data, error } = await supabase.auth.getSession();
+    const { data, error } = await supabaseClient.auth.getSession();
     if (error) {
       console.error(error);
       showAlert(`Error leyendo sesión: ${error.message}`, 'error');
@@ -453,13 +482,16 @@
 
     setSessionUI(data.session);
 
-    supabase.auth.onAuthStateChange((_event, session) => {
+    supabaseClient.auth.onAuthStateChange((_event, session) => {
       setSessionUI(session);
     });
   }
 
   async function init() {
-    els.projectUrlView.textContent = SUPABASE_URL;
+    if (els.projectUrlView) {
+      els.projectUrlView.textContent = SUPABASE_URL;
+    }
+
     bindEvents();
     await initAuth();
     await fetchAllPublicData();
@@ -467,5 +499,4 @@
   }
 
   window.addEventListener('DOMContentLoaded', init);
-
 })();
