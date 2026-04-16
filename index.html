@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BPSO Hospital Copiapó</title>
+  <meta name="description" content="Portal BPSO del Hospital Regional de Copiapó" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a class="brand" href="#top">
+        <span class="brand-mark">B</span>
+        <div>
+          <strong>BPSO</strong>
+          <small>Hospital Regional de Copiapó</small>
+        </div>
+      </a>
+
+      <nav class="site-nav">
+        <a href="#inicio">Inicio</a>
+        <a href="#que-es">Qué es BPSO</a>
+        <a href="#noticias">Noticias</a>
+        <a href="#capacitaciones">Capacitaciones</a>
+        <a href="#guias">Buenas prácticas</a>
+        <a href="#admin">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section id="inicio" class="hero">
+      <div class="container hero-grid">
+        <div>
+          <span class="eyebrow">Modelo independiente del sitio actual</span>
+          <h1>Portal BPSO moderno, publicable y administrable.</h1>
+          <p class="hero-copy">
+            Este prototipo separa el frontend del hosting antiguo y deja las publicaciones en Supabase,
+            para que noticias, capacitaciones y guías se administren sin tocar el WordPress legado.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#admin">Entrar a administrar</a>
+            <a class="btn btn-secondary" href="#noticias">Ver contenido</a>
+          </div>
+        </div>
+
+        <aside class="hero-card glass">
+          <h3>Base del proyecto</h3>
+          <ul class="feature-list">
+            <li>Noticias con imagen</li>
+            <li>Capacitaciones con texto e imagen</li>
+            <li>Guías descargables</li>
+            <li>Login con usuario y contraseña</li>
+            <li>Frontend listo para GitHub Pages</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section id="que-es" class="section">
+      <div class="container two-col">
+        <div>
+          <span class="section-tag">Qué es BPSO</span>
+          <h2>Un espacio para fortalecer la evidencia, la mejora continua y las buenas prácticas.</h2>
+        </div>
+        <div class="glass text-card">
+          <p>
+            BPSO reúne noticias, actividades formativas y materiales descargables que apoyan la difusión
+            de iniciativas, lineamientos y experiencias de implementación dentro del hospital.
+          </p>
+          <p>
+            La idea de este portal es dar visibilidad al trabajo del módulo, dejar trazabilidad del contenido
+            y facilitar el acceso a documentos y recursos de forma simple, rápida y ordenada.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="noticias" class="section">
+      <div class="container section-head">
+        <div>
+          <span class="section-tag">Noticias</span>
+          <h2>Publicaciones recientes</h2>
+        </div>
+      </div>
+      <div class="container">
+        <div id="news-grid" class="cards-grid"></div>
+        <p id="news-empty" class="empty-state">Aún no hay noticias publicadas.</p>
+      </div>
+    </section>
+
+    <section id="capacitaciones" class="section alt-section">
+      <div class="container section-head">
+        <div>
+          <span class="section-tag">Capacitaciones</span>
+          <h2>Registro de actividades formativas</h2>
+        </div>
+      </div>
+      <div class="container">
+        <div id="trainings-grid" class="cards-grid"></div>
+        <p id="trainings-empty" class="empty-state">Aún no hay capacitaciones publicadas.</p>
+      </div>
+    </section>
+
+    <section id="guias" class="section">
+      <div class="container section-head">
+        <div>
+          <span class="section-tag">Buenas prácticas</span>
+          <h2>Guías y documentos descargables</h2>
+        </div>
+      </div>
+      <div class="container">
+        <div id="guides-grid" class="guides-grid"></div>
+        <p id="guides-empty" class="empty-state">Aún no hay guías disponibles.</p>
+      </div>
+    </section>
+
+    <section id="admin" class="section admin-section">
+      <div class="container">
+        <div class="section-head admin-head">
+          <div>
+            <span class="section-tag">Administración</span>
+            <h2>Login y publicaciones</h2>
+          </div>
+          <div id="session-badge" class="session-badge">Sin sesión</div>
+        </div>
+
+        <div id="alert-box" class="alert hidden"></div>
+
+        <div class="admin-grid">
+          <div class="glass admin-card">
+            <h3>Acceso</h3>
+            <form id="login-form" class="stack-form">
+              <label>
+                <span>Correo</span>
+                <input id="login-email" type="email" placeholder="correo@hospital.cl" required />
+              </label>
+              <label>
+                <span>Contraseña</span>
+                <input id="login-password" type="password" placeholder="••••••••" required />
+              </label>
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Iniciar sesión</button>
+                <button class="btn btn-ghost" id="logout-btn" type="button">Cerrar sesión</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="glass admin-card">
+            <h3>Estado del proyecto</h3>
+            <ul class="status-list">
+              <li><strong>Supabase URL:</strong> <span id="project-url-view"></span></li>
+              <li><strong>Bucket imágenes:</strong> bpso-images</li>
+              <li><strong>Bucket guías:</strong> bpso-guides</li>
+              <li><strong>Modo:</strong> Sitio estático + backend Supabase</li>
+            </ul>
+            <p class="muted small-note">
+              Si las imágenes o PDFs no cargan en la web pública, revisa primero que los buckets estén configurados como públicos.
+            </p>
+          </div>
+        </div>
+
+        <div id="admin-panel" class="admin-panel hidden">
+          <div class="form-grid">
+            <div class="glass admin-card">
+              <h3>Publicar noticia</h3>
+              <form id="news-form" class="stack-form">
+                <label>
+                  <span>Título</span>
+                  <input name="title" type="text" required />
+                </label>
+                <label>
+                  <span>Resumen</span>
+                  <textarea name="summary" rows="3"></textarea>
+                </label>
+                <label>
+                  <span>Contenido</span>
+                  <textarea name="content" rows="7" required></textarea>
+                </label>
+                <label>
+                  <span>Imagen</span>
+                  <input name="image" type="file" accept="image/*" />
+                </label>
+                <button class="btn btn-primary" type="submit">Publicar noticia</button>
+              </form>
+            </div>
+
+            <div class="glass admin-card">
+              <h3>Publicar capacitación</h3>
+              <form id="training-form" class="stack-form">
+                <label>
+                  <span>Título</span>
+                  <input name="title" type="text" required />
+                </label>
+                <label>
+                  <span>Fecha actividad</span>
+                  <input name="event_date" type="date" />
+                </label>
+                <label>
+                  <span>Resumen</span>
+                  <textarea name="summary" rows="3"></textarea>
+                </label>
+                <label>
+                  <span>Contenido</span>
+                  <textarea name="content" rows="7" required></textarea>
+                </label>
+                <label>
+                  <span>Imagen</span>
+                  <input name="image" type="file" accept="image/*" />
+                </label>
+                <button class="btn btn-primary" type="submit">Publicar capacitación</button>
+              </form>
+            </div>
+
+            <div class="glass admin-card full-span">
+              <h3>Publicar guía de buenas prácticas</h3>
+              <form id="guide-form" class="stack-form">
+                <label>
+                  <span>Título</span>
+                  <input name="title" type="text" required />
+                </label>
+                <label>
+                  <span>Descripción</span>
+                  <textarea name="description" rows="4"></textarea>
+                </label>
+                <div class="dual-inputs">
+                  <label>
+                    <span>Portada / imagen</span>
+                    <input name="cover_image" type="file" accept="image/*" />
+                  </label>
+                  <label>
+                    <span>Archivo PDF o documento</span>
+                    <input name="pdf_file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx" required />
+                  </label>
+                </div>
+                <button class="btn btn-primary" type="submit">Publicar guía</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-wrap">
+      <p>BPSO · Prototipo funcional para Hospital Regional de Copiapó</p>
+      <a href="#top">Volver arriba</a>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>
