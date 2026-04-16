@@ -8,10 +8,10 @@
   const SUPABASE_URL = 'https://wedhcjlrlwdjoneahodl.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_QvlFvKMlHZsL1tP_UZfSvw_a4A6ejrQ';
 
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   window.bpso = {
-    supabase: sb
+    supabase: supabase
   };
 
   console.log('BPSO app cargada correctamente');
