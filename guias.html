@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Guías | BPSO Hospital Regional de Copiapó</title>
+  <link rel="icon" type="image/png" href="assets/BPSO.ico" />
   <meta name="description" content="Guías de buenas prácticas del programa BPSO y RNAO del Hospital Regional de Copiapó" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,19 +16,21 @@
   <header class="site-header">
     <div class="container nav-wrap">
       <a class="brand" href="index.html">
-        <img class="brand-logo" src="assets/logo-rnao.png" alt="Logo RNAO" />
+        <img class="brand-logo" src="assets/bpso.png" alt="Logo BPSO" />
         <div class="brand-copy">
-          <strong>RNAO · BPSO</strong>
+          <strong>BPSO · RNAO</strong>
           <small>Hospital Regional de Copiapó</small>
         </div>
       </a>
       <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">☰</button>
       <nav class="site-nav" id="site-nav">
         <a href="index.html">Inicio</a>
+        <a href="index.html#quienes-somos">¿Quiénes somos?</a>
         <a href="noticias.html">Noticias</a>
         <a href="capacitaciones.html">Capacitaciones</a>
-        <a href="guias.html">Guías</a>
-        <a href="login.html">Login</a>
+        <a href="index.html#rnao">RNAO</a>
+        <a href="index.html#bpso">BPSO</a>
+        <a href="comites.html">Comité</a>
       </nav>
     </div>
   </header>
@@ -47,11 +50,29 @@
     </section>
   </main>
   <footer class="site-footer">
-    <div class="container footer-wrap">
-      <p>RNAO · BPSO · Hospital Regional de Copiapó</p>
-      <a href="login.html">Login</a>
+    <div class="container footer-grid">
+      <div>
+        <strong>BPSO · RNAO · Hospital Regional de Copiapó</strong>
+        <p>Portal institucional de buenas prácticas basadas en evidencia.</p>
+      </div>
+      <div>
+        <strong>Contacto</strong>
+        <p>Correo: <a href="mailto:contacto.bpso@hospitalcopiapo.cl">contacto.bpso@hospitalcopiapo.cl</a></p>
+        <p>Fonos: Por confirmar</p>
+      </div>
+      <div>
+        <p><a href="login.html">Login editoras</a></p>
+      </div>
     </div>
   </footer>
+
+  <div id="content-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <article class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close" type="button" data-close-modal aria-label="Cerrar ventana">×</button>
+      <div id="modal-content"></div>
+    </article>
+  </div>
   <script src="app.js"></script>
 </body>
 </html>
