@@ -645,3 +645,186 @@ select:focus{
   .publication-action-buttons{grid-template-columns:1fr}
   .alert{left:14px;right:14px;top:14px;max-width:none}
 }
+
+/* Módulo nuevo: comités dinámicos y recursos digitales */
+.dynamic-committee-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.committee-card-dynamic{
+  padding:0;
+  overflow:hidden;
+}
+.committee-card-dynamic.featured-committee{
+  display:grid;
+  grid-template-columns:.9fr 1.1fr;
+  align-items:stretch;
+}
+.committee-image-wrap{
+  min-height:230px;
+  background:linear-gradient(135deg, rgba(2,152,52,.10), rgba(2,152,52,.03));
+  border-bottom:1px solid var(--line);
+}
+.featured-committee .committee-image-wrap{
+  border-bottom:0;
+  border-right:1px solid var(--line);
+}
+.committee-image-wrap img{
+  width:100%;
+  height:100%;
+  min-height:230px;
+  object-fit:cover;
+  display:block;
+}
+.committee-card-body{
+  padding:26px;
+}
+.committee-guides{
+  display:grid;
+  gap:8px;
+  margin:18px 0;
+  padding:14px;
+  border-radius:16px;
+  background:var(--primary-soft);
+  border:1px solid #d6ecdd;
+}
+.committee-guides strong{
+  color:var(--primary-dark);
+}
+.committee-guides a{
+  color:var(--primary-dark);
+  font-weight:800;
+}
+.committee-details{
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:14px 16px;
+  background:#fff;
+  margin-top:12px;
+}
+.committee-details summary{
+  cursor:pointer;
+  color:var(--primary-dark);
+  font-weight:800;
+}
+.committee-member-list{
+  display:grid;
+  gap:10px;
+  list-style:none;
+  padding:14px 0 0;
+  margin:0;
+}
+.committee-member-list li{
+  display:grid;
+  gap:3px;
+  padding-bottom:10px;
+  border-bottom:1px solid #edf4ef;
+}
+.committee-member-list li:last-child{
+  border-bottom:0;
+  padding-bottom:0;
+}
+.committee-member-list strong{
+  color:#1b3324;
+}
+.committee-member-list span{
+  color:var(--muted);
+  font-size:.92rem;
+  line-height:1.45;
+}
+.resource-list{
+  display:grid;
+  gap:10px;
+  padding-top:14px;
+}
+.resource-item{
+  display:grid;
+  gap:5px;
+  padding:12px;
+  border:1px solid #e0ece4;
+  border-radius:14px;
+  background:linear-gradient(180deg,#fff,rgba(2,152,52,.025));
+  color:inherit;
+}
+.resource-item span{
+  width:max-content;
+  padding:4px 8px;
+  border-radius:999px;
+  background:var(--primary-soft);
+  color:var(--primary-dark);
+  font-size:.78rem;
+  font-weight:800;
+}
+.resource-item strong{
+  color:#1b3324;
+}
+.resource-item small{
+  color:var(--muted);
+  line-height:1.5;
+}
+.resource-item:hover{
+  border-color:#b9dfc6;
+  transform:translateY(-1px);
+}
+@media (max-width:1024px){
+  .dynamic-committee-grid{grid-template-columns:1fr}
+  .committee-card-dynamic.featured-committee{grid-template-columns:1fr}
+  .featured-committee .committee-image-wrap{border-right:0;border-bottom:1px solid var(--line)}
+}
+
+/* ============================================================
+   FIX 16:9 - Noticias, capacitaciones y comités
+   Las imágenes quedan siempre en un bloque independiente arriba,
+   sin estirarse por la altura del texto/listado.
+   ============================================================ */
+.card-media,
+.featured-media,
+.committee-image-wrap,
+.modal-news-media,
+.modal-training-media{
+  width:100%;
+  aspect-ratio:16 / 9;
+  height:auto;
+  min-height:0;
+  overflow:hidden;
+  background:#f7faf8;
+}
+
+.card-media img,
+.card-media:not(.guide-media) img,
+.featured-media img,
+.committee-image-wrap img,
+.modal-news-media img,
+.modal-training-media img{
+  width:100%;
+  height:100%;
+  min-height:0;
+  max-height:none;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+  background:#f7faf8;
+}
+
+/* En comités, incluso el destacado, la imagen queda arriba y el contenido abajo */
+.committee-card-dynamic,
+.committee-card-dynamic.featured-committee{
+  display:block;
+}
+
+.committee-card-dynamic.featured-committee{
+  grid-template-columns:none;
+  align-items:initial;
+}
+
+.featured-committee .committee-image-wrap{
+  border-right:0;
+  border-bottom:1px solid var(--line);
+}
+
+.committee-card-body{
+  display:block;
+}
+
+@media (max-width:1024px){
+  .committee-card-dynamic.featured-committee{grid-template-columns:none}
+}

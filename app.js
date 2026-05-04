@@ -5,26 +5,38 @@
   // =====================================================
   // CONFIGURACIÓN SUPABASE
   // =====================================================
-  // Leo: cuando tengas el Supabase nuevo, reemplaza SOLO estas 2 líneas.
-  // 1) Project URL: Supabase > Project Settings > API > Project URL
-  // 2) Publishable key / anon key: Supabase > Project Settings > API > Project API keys
-  const SUPABASE_URL = 'https://wmatnccgvbrfebwbymhq.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_QbpQw67BT0bNOpjIv9Wp1A_jpMAhm-m';
+  // Para conectar el proyecto nuevo, edita solamente supabase-config.js.
+  const APP_CONFIG = window.BPSO_SUPABASE_CONFIG || {};
+  const SUPABASE_URL = APP_CONFIG.SUPABASE_URL || '';
+  const SUPABASE_KEY = APP_CONFIG.SUPABASE_ANON_KEY || APP_CONFIG.SUPABASE_KEY || '';
 
-  if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+  const isConfigured = Boolean(
+    SUPABASE_URL &&
+    SUPABASE_KEY &&
+    !SUPABASE_URL.includes('PEGA_AQUI') &&
+    !SUPABASE_KEY.includes('PEGA_AQUI')
+  );
+
+  let supabaseClient = null;
+  if (isConfigured && window.supabase && typeof window.supabase.createClient === 'function') {
+    try {
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } catch (error) {
+      console.error('No se pudo inicializar Supabase. Revisa supabase-config.js', error);
+    }
+  } else if (isConfigured) {
     console.error('Supabase CDN no cargó correctamente.');
-    return;
   }
 
-
-  const { createClient } = window.supabase;
-  let supabaseClient;
-  try {
-    supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
-  } catch (error) {
-    console.error('Configura SUPABASE_URL y SUPABASE_KEY en app.js antes de probar el sitio.', error);
-    return;
-  }
+  // =====================================================
+  // FUENTE ÚNICA DE DATOS
+  // =====================================================
+  // Los archivos físicos de guías y carátulas pueden vivir localmente
+  // en /guias y /assets/guias, pero sus rutas se editan en la tabla
+  // public.guide_catalog.
+  //
+  // Las imágenes de comités pueden vivir localmente en /assets/comites,
+  // pero su ruta se edita en public.committees.image_path.
 
   const state = {
     session: null,
@@ -32,9 +44,10 @@
     news: [],
     trainings: [],
     guides: [],
+    committees: [],
     adminNews: [],
     adminTrainings: [],
-    adminGuides: []
+    adminResources: []
   };
 
   const els = {
@@ -52,32 +65,38 @@
     alertBox: document.getElementById('alert-box'),
     newsForm: document.getElementById('news-form'),
     trainingForm: document.getElementById('training-form'),
-    guideForm: document.getElementById('guide-form'),
+    resourceForm: document.getElementById('resource-form'),
+    resourceCommitteeSelect: document.getElementById('resource-committee-select'),
+    resourceGuideSelect: document.getElementById('resource-guide-select'),
     adminNewsList: document.getElementById('admin-news-list'),
     adminTrainingsList: document.getElementById('admin-trainings-list'),
-    adminGuidesList: document.getElementById('admin-guides-list'),
+    adminResourcesList: document.getElementById('admin-resources-list'),
     newsGrid: document.getElementById('news-grid'),
     newsFeatured: document.getElementById('news-featured'),
     newsOlderHead: document.querySelector('.news-older-head'),
     trainingsGrid: document.getElementById('trainings-grid'),
     guidesGrid: document.getElementById('guides-grid'),
+    committeesGrid: document.getElementById('committees-grid'),
     newsEmpty: document.getElementById('news-empty'),
     trainingsEmpty: document.getElementById('trainings-empty'),
     guidesEmpty: document.getElementById('guides-empty'),
+    committeesEmpty: document.getElementById('committees-empty'),
     homeNewsSection: document.getElementById('home-news-section'),
     homeNewsFeatured: document.getElementById('home-news-featured'),
     homeTrainingsSection: document.getElementById('home-trainings-section'),
     homeTrainingFeatured: document.getElementById('home-training-featured'),
     modal: document.getElementById('content-modal'),
-    modalContent: document.getElementById('modal-content')
+    modalContent: document.getElementById('modal-content'),
+    guideBulletList: document.getElementById('guide-bullet-list'),
+    homeCommitteeCard: document.getElementById('home-committee-card')
   };
 
   const CONTENT_TABLES = {
     news: 'news',
     training: 'trainings',
     trainings: 'trainings',
-    guide: 'guides',
-    guides: 'guides'
+    resource: 'committee_resources',
+    resources: 'committee_resources'
   };
 
   const PUBLICATION_MESSAGES = {
@@ -89,15 +108,25 @@
       draft: 'Capacitación guardada como borrador.',
       published: 'Capacitación publicada.'
     },
-    guide: {
-      draft: 'Guía guardada como borrador.',
-      published: 'Guía publicada.'
+    resource: {
+      draft: 'Recurso digital guardado como borrador.',
+      published: 'Recurso digital publicado.'
     },
     content: {
       draft: 'Contenido pasado a borrador.',
       published: 'Contenido publicado.'
     }
   };
+
+  function hasSupabase() {
+    return Boolean(supabaseClient);
+  }
+
+  function requireSupabase() {
+    if (!hasSupabase()) {
+      throw new Error('Falta configurar SUPABASE_URL y SUPABASE_ANON_KEY en supabase-config.js.');
+    }
+  }
 
   function initMenu() {
     if (!els.menuToggle || !els.siteNav) return;
@@ -126,7 +155,8 @@
     const messages = {
       'sin-sesion': 'Debes iniciar sesión para ingresar al panel de publicaciones.',
       'sin-permisos': 'Tu usuario no tiene permisos activos para administrar publicaciones.',
-      'perfil-no-encontrado': 'Tu cuenta existe en Auth, pero no tiene perfil creado en la tabla profiles.'
+      'perfil-no-encontrado': 'Tu cuenta existe en Auth, pero no tiene perfil creado en la tabla profiles.',
+      'sin-configuracion': 'Falta configurar Supabase en supabase-config.js.'
     };
     showAlert(messages[error] || 'No fue posible validar el acceso.', 'error');
   }
@@ -148,20 +178,31 @@
   }
 
   function makeSlug(text) {
-    return text.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
+    return String(text || '')
+      .toLowerCase()
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
   }
 
   function sanitizeFileName(fileName) {
-    return fileName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]/g, '_');
+    return String(fileName || 'archivo')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9._-]/g, '_');
   }
 
   function getSummary(item, limit = 180) {
-    const raw = item.summary || item.content || '';
+    const raw = item.summary || item.content || item.description || '';
     return raw.length > limit ? `${raw.slice(0, limit).trim()}...` : raw;
   }
 
   function getContent(item) {
-    return item.content || item.summary || 'Sin contenido disponible.';
+    return item.content || item.summary || item.description || 'Sin contenido disponible.';
   }
 
   function toggleEmptyState(element, emptyElement, hasItems) {
@@ -193,11 +234,7 @@
   }
 
   function roleLabel(role) {
-    const labels = {
-      admin: 'Administrador',
-      editor: 'Editor'
-    };
-    return labels[role] || 'Sin rol';
+    return role === 'editor' ? 'Editor' : 'Editor';
   }
 
   function statusLabel(status) {
@@ -209,6 +246,19 @@
     return labels[status] || 'Sin estado';
   }
 
+  function resourceTypeLabel(type) {
+    const labels = {
+      file: 'Archivo',
+      pdf: 'PDF',
+      document: 'Documento',
+      presentation: 'Presentación',
+      image: 'Imagen',
+      video: 'Video',
+      link: 'Enlace'
+    };
+    return labels[type] || 'Recurso';
+  }
+
   function normalizeStatus(status) {
     return status === 'published' ? 'published' : 'draft';
   }
@@ -216,7 +266,7 @@
   function normalizeContentMessageType(type) {
     if (type === 'news') return 'news';
     if (type === 'training' || type === 'trainings') return 'training';
-    if (type === 'guide' || type === 'guides') return 'guide';
+    if (type === 'resource' || type === 'resources') return 'resource';
     return 'content';
   }
 
@@ -231,11 +281,23 @@
   }
 
   function userCanManage(profile) {
-    return Boolean(profile?.is_active && ['admin', 'editor'].includes(profile.role));
+    return Boolean(profile?.is_active && profile.role === 'editor');
+  }
+
+  function guideFilePath(item) {
+    // Fuente única: Supabase.
+    // El archivo puede estar en la carpeta local /guias, pero la ruta se edita en guide_catalog.local_file_path.
+    return item?.local_file_path || item?.file_url || item?.download_url || '#';
+  }
+
+  function guideCoverPath(item) {
+    // Fuente única: Supabase.
+    // La carátula puede estar en /assets/guias, pero la ruta se edita en guide_catalog.cover_image_path.
+    return item?.cover_image_path || item?.cover_image_url || '';
   }
 
   async function loadProfileForSession(session) {
-    if (!session?.user?.id) return null;
+    if (!session?.user?.id || !hasSupabase()) return null;
     const { data, error } = await supabaseClient
       .from('profiles')
       .select('id, email, full_name, role, is_active')
@@ -256,7 +318,9 @@
     state.profile = profile || null;
 
     if (els.sessionBadge) {
-      if (profile?.full_name) {
+      if (!hasSupabase()) {
+        els.sessionBadge.textContent = 'Supabase sin configurar';
+      } else if (profile?.full_name) {
         els.sessionBadge.textContent = `${profile.full_name} · ${roleLabel(profile.role)}`;
       } else if (hasSession) {
         els.sessionBadge.textContent = 'Sesión activa · Perfil pendiente';
@@ -272,15 +336,17 @@
   async function applyAuthState(session) {
     let profile = null;
 
-    if (session?.user) {
-      profile = await loadProfileForSession(session);
-    }
-
+    if (session?.user) profile = await loadProfileForSession(session);
     setSessionUI(session, profile);
 
     const page = getCurrentPage();
 
     if (isProtectedPage()) {
+      if (!hasSupabase()) {
+        redirectToLogin('sin-configuracion');
+        return false;
+      }
+
       if (!session?.user) {
         redirectToLogin('sin-sesion');
         return false;
@@ -308,6 +374,7 @@
   }
 
   async function getAuthenticatedUserOrThrow() {
+    requireSupabase();
     const { data: userData, error: userError } = await supabaseClient.auth.getUser();
     if (userError || !userData?.user) throw new Error('No hay usuario autenticado.');
 
@@ -353,10 +420,11 @@
 
   function guideCard(item, compact = false) {
     const description = item.description || 'Documento disponible para descarga.';
-    const cover = item.cover_image_url
-      ? `<img src="${escapeHtml(item.cover_image_url)}" alt="${escapeHtml(item.title)}">`
+    const coverPath = guideCoverPath(item);
+    const cover = coverPath
+      ? `<img src="${escapeHtml(coverPath)}" alt="${escapeHtml(item.title)}" onerror="this.style.display='none';this.closest('.guide-media').innerHTML='<span class=&quot;guide-placeholder&quot;>Guía BPSO</span>'">`
       : `<span class="guide-placeholder">Guía BPSO</span>`;
-    const downloadUrl = item.download_url || item.file_url || '#';
+    const downloadUrl = guideFilePath(item);
 
     return `
       <article class="card guide-card${compact ? ' guide-card-compact' : ''}">
@@ -364,10 +432,99 @@
           <div class="card-media guide-media">${cover}</div>
         </button>
         <div class="card-body">
-          <div class="card-meta">Guía descargable</div>
+          <div class="card-meta">Guía oficial BPSO/RNAO</div>
           <h3>${escapeHtml(item.title)}</h3>
           ${compact ? '' : `<p>${escapeHtml(description)}</p>`}
           <div class="guide-actions"><a class="btn btn-primary" href="${escapeHtml(downloadUrl)}" target="_blank" rel="noopener" download>Descargar guía</a></div>
+        </div>
+      </article>`;
+  }
+
+  function resourceLink(resource) {
+    return resource.external_url || resource.file_url || '#';
+  }
+
+  function resourceList(resources = []) {
+    if (!resources.length) return '<p class="muted-note">Sin recursos digitales publicados por el momento.</p>';
+    return `
+      <div class="resource-list">
+        ${resources.map((resource) => `
+          <a class="resource-item" href="${escapeHtml(resourceLink(resource))}" target="_blank" rel="noopener">
+            <span>${escapeHtml(resourceTypeLabel(resource.resource_type))}</span>
+            <strong>${escapeHtml(resource.title)}</strong>
+            ${resource.description ? `<small>${escapeHtml(resource.description)}</small>` : ''}
+          </a>
+        `).join('')}
+      </div>`;
+  }
+
+  function memberList(members = []) {
+    if (!members.length) return '<p class="muted-note">Integrantes pendientes de actualización.</p>';
+    return `
+      <ul class="committee-member-list">
+        ${members.map((member) => {
+          const detail = [member.role_title, member.unit].filter(Boolean).join(' · ');
+          return `<li><strong>${escapeHtml(member.full_name)}</strong>${detail ? `<span>${escapeHtml(detail)}</span>` : ''}</li>`;
+        }).join('')}
+      </ul>`;
+  }
+
+  function committeeGuideLinks(guides = []) {
+    if (!guides.length) return '';
+    return `
+      <div class="committee-guides">
+        <strong>Guía asociada</strong>
+        ${guides.map((guide) => `<a href="${escapeHtml(guideFilePath(guide))}" target="_blank" rel="noopener" download>${escapeHtml(guide.title)}</a>`).join('')}
+      </div>`;
+  }
+
+  function paragraphsHtml(text) {
+    const cleanText = String(text || '').trim();
+    if (!cleanText) return '<p>Información pendiente de actualización.</p>';
+    return cleanText
+      .split(/\n{2,}|\r?\n/)
+      .map((paragraph) => paragraph.trim())
+      .filter(Boolean)
+      .map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`)
+      .join('');
+  }
+
+  function renderHomeCommittee() {
+    if (!els.homeCommitteeCard) return;
+    const committee = state.committees.find((item) => item.slug === 'comite-implementacion') || state.committees[0];
+    if (!committee) {
+      els.homeCommitteeCard.innerHTML = `
+        <p>Información del comité pendiente de actualización.</p>
+        <div class="section-actions"><a class="btn btn-outline" href="comites.html">Ver comités</a></div>`;
+      return;
+    }
+
+    els.homeCommitteeCard.innerHTML = `
+      ${paragraphsHtml(committee.description)}
+      <div class="section-actions"><a class="btn btn-outline" href="comites.html">Ver comités</a></div>`;
+  }
+
+  function committeeCard(committee) {
+    const imagePath = committee.image_path || 'assets/comites/comite-generico.jpg';
+    const isFeatured = committee.slug === 'comite-implementacion';
+    return `
+      <article class="committee-card committee-card-dynamic${isFeatured ? ' featured-committee' : ''}">
+        <div class="committee-image-wrap">
+          <img src="${escapeHtml(imagePath)}" alt="${escapeHtml(committee.image_alt || committee.name)}" onerror="this.src='assets/comites/comite-generico.jpg'">
+        </div>
+        <div class="committee-card-body">
+          <span class="eyebrow">${isFeatured ? 'Comité principal' : 'Comité asociado'}</span>
+          <h2>${escapeHtml(committee.name)}</h2>
+          <p>${escapeHtml(committee.description || '')}</p>
+          ${committeeGuideLinks(committee.guides)}
+          <details class="committee-details">
+            <summary>Ver integrantes (${committee.members.length})</summary>
+            ${memberList(committee.members)}
+          </details>
+          <details class="committee-details">
+            <summary>Recursos digitales (${committee.resources.length})</summary>
+            ${resourceList(committee.resources)}
+          </details>
         </div>
       </article>`;
   }
@@ -385,11 +542,12 @@
     const item = findGuide(id);
     if (!item || !els.modal || !els.modalContent) return;
     const description = item.description || 'Documento disponible para descarga.';
-    const downloadUrl = item.download_url || item.file_url || '#';
+    const downloadUrl = guideFilePath(item);
+    const coverPath = guideCoverPath(item);
     els.modalContent.innerHTML = `
-      <div class="modal-media modal-guide-media">${item.cover_image_url ? `<img src="${escapeHtml(item.cover_image_url)}" alt="${escapeHtml(item.title)}">` : `<span class="guide-placeholder guide-placeholder-large">Guía BPSO</span>`}</div>
+      <div class="modal-media guide-modal-media">${coverPath ? `<img src="${escapeHtml(coverPath)}" alt="${escapeHtml(item.title)}">` : `<span class="guide-placeholder guide-placeholder-large">Guía BPSO</span>`}</div>
       <div class="modal-body">
-        <div class="card-meta">Guía de buenas prácticas</div>
+        <div class="card-meta">Guía oficial de buenas prácticas</div>
         <h2 id="modal-title">${escapeHtml(item.title)}</h2>
         <div class="modal-text">${escapeHtml(description).replace(/\n/g, '<br>')}</div>
         <div class="modal-actions"><a class="btn btn-primary" href="${escapeHtml(downloadUrl)}" target="_blank" rel="noopener" download>Descargar guía</a></div>
@@ -463,7 +621,7 @@
   function renderNews() {
     renderHomeNews();
     if (!els.newsGrid && !els.newsFeatured) return;
-    toggleEmptyState(els.newsGrid || els.newsFeatured, els.newsEmpty, state.news.length > 0);
+    toggleEmptyState(els.newsGrid, els.newsEmpty, state.news.length > 0);
     if (!state.news.length) {
       if (els.newsFeatured) els.newsFeatured.innerHTML = '';
       if (els.newsGrid) els.newsGrid.innerHTML = '';
@@ -485,22 +643,40 @@
     els.trainingsGrid.innerHTML = state.trainings.map((item) => articleCard(item, 'training')).join('');
   }
 
+  function renderGuideBulletList() {
+    if (!els.guideBulletList) return;
+    els.guideBulletList.innerHTML = state.guides.length
+      ? state.guides.map((guide) => `<li>${escapeHtml(guide.title)}</li>`).join('')
+      : '<li>Guías pendientes de actualización.</li>';
+  }
+
   function renderGuides() {
+    renderGuideBulletList();
     toggleEmptyState(els.guidesGrid, els.guidesEmpty, state.guides.length > 0);
     if (!els.guidesGrid || !state.guides.length) return;
     const compact = els.guidesGrid.classList.contains('compact-guides');
     els.guidesGrid.innerHTML = state.guides.map((item) => guideCard(item, compact)).join('');
   }
 
+  function renderCommittees() {
+    renderHomeCommittee();
+    toggleEmptyState(els.committeesGrid, els.committeesEmpty, state.committees.length > 0);
+    if (!els.committeesGrid || !state.committees.length) return;
+    els.committeesGrid.innerHTML = state.committees.map((committee) => committeeCard(committee)).join('');
+  }
+
   function adminRow(item, type) {
     const isPublished = item.status === 'published';
     const nextStatus = isPublished ? 'draft' : 'published';
     const buttonLabel = isPublished ? 'Pasar a borrador' : 'Publicar';
+    const subtitle = type === 'resources'
+      ? `${item.committee?.name || 'Comité'} · ${statusLabel(item.status)} · ${formatDate(item.updated_at || item.created_at)}`
+      : `${statusLabel(item.status)} · ${formatDate(item.updated_at || item.created_at)}`;
     return `
       <div class="admin-content-row">
         <div>
           <strong>${escapeHtml(item.title)}</strong>
-          <small>${statusLabel(item.status)} · ${escapeHtml(formatDate(item.updated_at || item.created_at))}</small>
+          <small>${escapeHtml(subtitle)}</small>
         </div>
         <button class="btn btn-outline btn-small" type="button" data-status-action data-content-type="${escapeHtml(type)}" data-id="${escapeHtml(item.id)}" data-next-status="${escapeHtml(nextStatus)}">${escapeHtml(buttonLabel)}</button>
       </div>`;
@@ -516,28 +692,43 @@
   function renderAdminContent() {
     renderAdminList(els.adminNewsList, state.adminNews, 'news', 'Aún no hay noticias creadas.');
     renderAdminList(els.adminTrainingsList, state.adminTrainings, 'trainings', 'Aún no hay capacitaciones creadas.');
-    renderAdminList(els.adminGuidesList, state.adminGuides, 'guides', 'Aún no hay guías creadas.');
+    renderAdminList(els.adminResourcesList, state.adminResources, 'resources', 'Aún no hay recursos digitales creados.');
   }
 
-  async function createSignedGuideUrl(filePath) {
-    if (!filePath) return null;
-    const { data, error } = await supabaseClient.storage.from('bpso-guides').createSignedUrl(filePath, 60 * 30);
-    if (error) {
-      console.warn('No se pudo generar URL firmada para guía:', error.message);
-      return null;
-    }
-    return data?.signedUrl || null;
+  function normalizeGuideCatalog(data = []) {
+    return (data || [])
+      .filter((guide) => guide.status === 'published' || !guide.status)
+      .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0) || String(a.title).localeCompare(String(b.title), 'es'));
   }
 
-  async function hydrateGuideDownloadUrls(guides) {
-    return Promise.all((guides || []).map(async (guide) => {
-      if (!guide.file_path) return guide;
-      const signedUrl = await createSignedGuideUrl(guide.file_path);
-      return signedUrl ? { ...guide, download_url: signedUrl } : guide;
-    }));
+  function normalizeCommitteeData(data = []) {
+    return (data || [])
+      .map((committee) => {
+        const members = (committee.committee_members || [])
+          .filter((member) => member.is_active !== false)
+          .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0) || String(a.full_name).localeCompare(String(b.full_name), 'es'));
+
+        const guides = (committee.committee_guides || [])
+          .map((relation) => relation.guide)
+          .filter(Boolean)
+          .filter((guide) => guide.status === 'published' || !guide.status)
+          .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+
+        const resources = (committee.committee_resources || [])
+          .filter((resource) => resource.status === 'published' || !resource.status)
+          .sort((a, b) => new Date(b.published_at || b.created_at || 0) - new Date(a.published_at || a.created_at || 0));
+
+        return { ...committee, members, guides, resources };
+      })
+      .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0) || String(a.name).localeCompare(String(b.name), 'es'));
   }
 
   async function fetchNews() {
+    if (!hasSupabase()) {
+      state.news = [];
+      renderNews();
+      return;
+    }
     const { data, error } = await supabaseClient
       .from('news')
       .select('*')
@@ -550,6 +741,11 @@
   }
 
   async function fetchTrainings() {
+    if (!hasSupabase()) {
+      state.trainings = [];
+      renderTrainings();
+      return;
+    }
     const { data, error } = await supabaseClient
       .from('trainings')
       .select('*')
@@ -562,19 +758,66 @@
   }
 
   async function fetchGuides() {
+    if (!hasSupabase()) {
+      state.guides = [];
+      renderGuides();
+      populateGuideSelect();
+      return;
+    }
+
     const { data, error } = await supabaseClient
-      .from('guides')
+      .from('guide_catalog')
       .select('*')
       .eq('status', 'published')
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    state.guides = await hydrateGuideDownloadUrls(data || []);
+      .order('sort_order', { ascending: true })
+      .order('title', { ascending: true });
+
+    if (error) {
+      console.error('No se pudo cargar guide_catalog desde Supabase.', error.message);
+      state.guides = [];
+    } else {
+      state.guides = normalizeGuideCatalog(data || []);
+    }
     renderGuides();
+    populateGuideSelect();
+  }
+
+  async function fetchCommittees() {
+    if (!els.committeesGrid && !els.resourceCommitteeSelect && !els.homeCommitteeCard) return;
+    if (!hasSupabase()) {
+      state.committees = [];
+      renderCommittees();
+      populateCommitteeSelect();
+      return;
+    }
+
+    const { data, error } = await supabaseClient
+      .from('committees')
+      .select(`
+        id,
+        name,
+        slug,
+        description,
+        image_path,
+        image_alt,
+        status,
+        sort_order,
+        committee_members(id, full_name, role_title, unit, sort_order, is_active),
+        committee_guides(guide:guide_catalog(id, title, slug, description, local_file_path, cover_image_path, status, sort_order)),
+        committee_resources(id, title, description, resource_type, file_path, file_url, external_url, status, published_at, created_at)
+      `)
+      .eq('status', 'published')
+      .order('sort_order', { ascending: true });
+
+    if (error) throw error;
+    state.committees = normalizeCommitteeData(data || []);
+    renderCommittees();
+    populateCommitteeSelect();
   }
 
   async function fetchAllPublicData() {
     try {
-      await Promise.all([fetchNews(), fetchTrainings(), fetchGuides()]);
+      await Promise.all([fetchGuides(), fetchNews(), fetchTrainings(), fetchCommittees()]);
     } catch (error) {
       console.error(error);
       showAlert(`Error cargando contenido público: ${error.message}`, 'error');
@@ -582,22 +825,22 @@
   }
 
   async function fetchAdminContent() {
-    if (!userCanManage(state.profile)) return;
+    if (!userCanManage(state.profile) || !hasSupabase()) return;
 
     try {
-      const [newsRes, trainingsRes, guidesRes] = await Promise.all([
+      const [newsRes, trainingsRes, resourcesRes] = await Promise.all([
         supabaseClient.from('news').select('id,title,status,created_at,updated_at,published_at').order('updated_at', { ascending: false }).limit(20),
         supabaseClient.from('trainings').select('id,title,status,created_at,updated_at,published_at').order('updated_at', { ascending: false }).limit(20),
-        supabaseClient.from('guides').select('id,title,status,created_at,updated_at,published_at').order('updated_at', { ascending: false }).limit(20)
+        supabaseClient.from('committee_resources').select('id,title,status,created_at,updated_at,published_at,committee:committees(name)').order('updated_at', { ascending: false }).limit(20)
       ]);
 
       if (newsRes.error) throw newsRes.error;
       if (trainingsRes.error) throw trainingsRes.error;
-      if (guidesRes.error) throw guidesRes.error;
+      if (resourcesRes.error) throw resourcesRes.error;
 
       state.adminNews = newsRes.data || [];
       state.adminTrainings = trainingsRes.data || [];
-      state.adminGuides = guidesRes.data || [];
+      state.adminResources = resourcesRes.data || [];
       renderAdminContent();
     } catch (error) {
       console.error(error);
@@ -606,6 +849,7 @@
   }
 
   async function loginUser(email, password) {
+    requireSupabase();
     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) throw error;
 
@@ -617,7 +861,7 @@
 
     if (!userCanManage(profile)) {
       await supabaseClient.auth.signOut();
-      throw new Error('Tu perfil no está activo o no tiene rol admin/editor.');
+      throw new Error('Tu perfil no está activo como editor.');
     }
 
     setSessionUI(data.session, profile);
@@ -625,12 +869,14 @@
   }
 
   async function logoutUser() {
+    requireSupabase();
     const { error } = await supabaseClient.auth.signOut();
     if (error) throw error;
     state.profile = null;
   }
 
   async function sendPasswordRecovery(email) {
+    requireSupabase();
     const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
       redirectTo: 'https://bpso.hospitalcopiapo.cl/reset-password'
     });
@@ -638,6 +884,7 @@
   }
 
   async function uploadImage(file, folder = 'general') {
+    requireSupabase();
     if (!file) return null;
     const fileName = `${folder}/${Date.now()}-${sanitizeFileName(file.name)}`;
     const { error: uploadError } = await supabaseClient.storage
@@ -649,20 +896,29 @@
     return { path: fileName, url: data.publicUrl };
   }
 
-  async function uploadGuide(file) {
-    if (!file) throw new Error('Debes seleccionar un archivo de guía.');
-    const fileName = `guides/${Date.now()}-${sanitizeFileName(file.name)}`;
+  async function uploadResource(file, committeeSlug = 'general') {
+    requireSupabase();
+    if (!file) return null;
+    const cleanFolder = makeSlug(committeeSlug || 'general') || 'general';
+    const fileName = `committees/${cleanFolder}/${Date.now()}-${sanitizeFileName(file.name)}`;
     const { error: uploadError } = await supabaseClient.storage
-      .from('bpso-guides')
+      .from('bpso-resources')
       .upload(fileName, file, { cacheControl: '3600', upsert: false });
     if (uploadError) throw uploadError;
 
-    const { data } = supabaseClient.storage.from('bpso-guides').getPublicUrl(fileName);
+    const { data } = supabaseClient.storage.from('bpso-resources').getPublicUrl(fileName);
     return { path: fileName, url: data.publicUrl };
   }
 
   function publishedAtForStatus(status) {
     return status === 'published' ? new Date().toISOString() : null;
+  }
+
+  function normalizeExternalUrl(rawUrl) {
+    const value = String(rawUrl || '').trim();
+    if (!value) return '';
+    if (/^https?:\/\//i.test(value)) return value;
+    return `https://${value}`;
   }
 
   async function createNews({ title, summary, content, imageFile, status }) {
@@ -691,6 +947,7 @@
     const image = imageFile ? await uploadImage(imageFile, 'trainings') : null;
     const payload = {
       title,
+      slug: `${makeSlug(title)}-${Date.now()}`,
       summary,
       content,
       image_path: image?.path || null,
@@ -705,28 +962,37 @@
     return safeStatus;
   }
 
-  async function createGuide({ title, description, pdfFile, coverImageFile, status }) {
+  async function createResource({ committeeId, guideId, title, description, resourceType, externalUrl, file, status }) {
     const { user } = await getAuthenticatedUserOrThrow();
     const safeStatus = normalizeStatus(status);
-    const file = await uploadGuide(pdfFile);
-    const coverImage = coverImageFile ? await uploadImage(coverImageFile, 'guides') : null;
+    const committee = state.committees.find((item) => String(item.id) === String(committeeId));
+    const cleanExternalUrl = normalizeExternalUrl(externalUrl);
+
+    if (!committeeId) throw new Error('Debes seleccionar un comité.');
+    if (!file && !cleanExternalUrl) throw new Error('Debes adjuntar un archivo o ingresar un enlace externo.');
+
+    const uploaded = file ? await uploadResource(file, committee?.slug || `comite-${committeeId}`) : null;
     const payload = {
+      committee_id: Number(committeeId),
+      guide_id: guideId ? Number(guideId) : null,
       title,
       description,
-      file_path: file.path,
-      file_url: file.url,
-      cover_image_path: coverImage?.path || null,
-      cover_image_url: coverImage?.url || null,
+      resource_type: resourceType || (cleanExternalUrl && !file ? 'link' : 'file'),
+      file_path: uploaded?.path || null,
+      file_url: uploaded?.url || null,
+      external_url: cleanExternalUrl || null,
       status: safeStatus,
       published_at: publishedAtForStatus(safeStatus),
       author_id: user.id
     };
-    const { error } = await supabaseClient.from('guides').insert([payload]);
+
+    const { error } = await supabaseClient.from('committee_resources').insert([payload]);
     if (error) throw error;
     return safeStatus;
   }
 
   async function updateContentStatus(type, id, nextStatus) {
+    requireSupabase();
     const tableName = CONTENT_TABLES[type];
     if (!tableName) throw new Error('Tipo de contenido no reconocido.');
 
@@ -757,6 +1023,22 @@
     }
   }
 
+  function populateCommitteeSelect() {
+    if (!els.resourceCommitteeSelect) return;
+    const currentValue = els.resourceCommitteeSelect.value;
+    els.resourceCommitteeSelect.innerHTML = '<option value="">Selecciona un comité</option>' +
+      state.committees.map((committee) => `<option value="${escapeHtml(committee.id)}">${escapeHtml(committee.name)}</option>`).join('');
+    if (currentValue) els.resourceCommitteeSelect.value = currentValue;
+  }
+
+  function populateGuideSelect() {
+    if (!els.resourceGuideSelect) return;
+    const currentValue = els.resourceGuideSelect.value;
+    els.resourceGuideSelect.innerHTML = '<option value="">Sin guía específica</option>' +
+      state.guides.map((guide) => `<option value="${escapeHtml(guide.id)}">${escapeHtml(guide.title)}</option>`).join('');
+    if (currentValue) els.resourceGuideSelect.value = currentValue;
+  }
+
   function bindEvents() {
     bindModalEvents();
 
@@ -779,7 +1061,7 @@
           window.location.href = getSafeRedirectTarget();
         } catch (error) {
           console.error(error);
-          showAlert(`Error al iniciar sesión: ${error.message}`, 'error');
+          showAlert(`Error al iniciar sesión: ${error.message}`, 'error', 5000);
         }
       });
     }
@@ -792,7 +1074,7 @@
           if (isProtectedPage()) redirectToLogin('sin-sesion');
         } catch (error) {
           console.error(error);
-          showAlert(`Error al cerrar sesión: ${error.message}`, 'error');
+          showAlert(`Error al cerrar sesión: ${error.message}`, 'error', 5000);
         }
       });
     }
@@ -806,7 +1088,7 @@
           showAlert('Correo de recuperación enviado. Revisa tu bandeja de entrada y correo no deseado.');
         } catch (error) {
           console.error(error);
-          showAlert(`Error enviando recuperación: ${error.message}`, 'error');
+          showAlert(`Error enviando recuperación: ${error.message}`, 'error', 5000);
         }
       });
     }
@@ -866,27 +1148,32 @@
       });
     }
 
-    if (els.guideForm) {
-      els.guideForm.addEventListener('submit', async (event) => {
+    if (els.resourceForm) {
+      els.resourceForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const form = event.currentTarget;
         const selectedStatus = getSubmittedStatus(event);
         const btn = event.submitter || form.querySelector('button[type="submit"]');
         setSubmitState(btn, selectedStatus === 'published' ? 'Publicando...' : 'Guardando...', true);
         try {
-          const status = await createGuide({
+          const status = await createResource({
+            committeeId: form.committee_id.value,
+            guideId: form.guide_id.value || null,
             title: form.title.value.trim(),
             description: form.description.value.trim(),
-            pdfFile: form.pdf_file.files[0] || null,
-            coverImageFile: form.cover_image.files[0] || null,
+            resourceType: form.resource_type.value,
+            externalUrl: form.external_url.value.trim(),
+            file: form.resource_file.files[0] || null,
             status: selectedStatus
           });
           form.reset();
-          showAlert(getPublicationMessage('guide', status));
-          await Promise.all([fetchGuides(), fetchAdminContent()]);
+          populateCommitteeSelect();
+          populateGuideSelect();
+          showAlert(getPublicationMessage('resource', status));
+          await Promise.all([fetchCommittees(), fetchAdminContent()]);
         } catch (error) {
           console.error(error);
-          showAlert(`Error guardando guía: ${error.message}`, 'error', 5000);
+          showAlert(`Error guardando recurso digital: ${error.message}`, 'error', 5000);
         } finally {
           setSubmitState(btn, '', false);
         }
@@ -913,15 +1200,29 @@
   }
 
   function subscribeRealtime() {
-    if (!els.newsGrid && !els.newsFeatured && !els.trainingsGrid && !els.guidesGrid && !els.homeNewsFeatured && !els.homeTrainingFeatured && !els.adminNewsList) return;
+    if (!hasSupabase()) return;
+    if (!els.newsGrid && !els.newsFeatured && !els.trainingsGrid && !els.guidesGrid && !els.committeesGrid && !els.homeCommitteeCard && !els.homeNewsFeatured && !els.homeTrainingFeatured && !els.adminNewsList) return;
+
     supabaseClient.channel('bpso-content-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'news' }, async () => { await fetchNews(); await fetchAdminContent(); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'trainings' }, async () => { await fetchTrainings(); await fetchAdminContent(); })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'guides' }, async () => { await fetchGuides(); await fetchAdminContent(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'guide_catalog' }, async () => { await fetchGuides(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'committees' }, async () => { await fetchCommittees(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'committee_members' }, async () => { await fetchCommittees(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'committee_resources' }, async () => { await fetchCommittees(); await fetchAdminContent(); })
       .subscribe();
   }
 
   async function initAuth() {
+    if (!hasSupabase()) {
+      setSessionUI(null, null);
+      if (isProtectedPage()) {
+        redirectToLogin('sin-configuracion');
+        return false;
+      }
+      return true;
+    }
+
     const { data, error } = await supabaseClient.auth.getSession();
     if (error) {
       console.error(error);
@@ -941,7 +1242,7 @@
   async function init() {
     initMenu();
     showQueryAlert();
-    if (els.projectUrlView) els.projectUrlView.textContent = SUPABASE_URL;
+    if (els.projectUrlView) els.projectUrlView.textContent = SUPABASE_URL || 'Pendiente en supabase-config.js';
     bindEvents();
     const canContinue = await initAuth();
     if (!canContinue) return;

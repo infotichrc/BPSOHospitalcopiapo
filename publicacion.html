@@ -30,7 +30,7 @@
         <a href="capacitaciones.html">Capacitaciones</a>
         <a href="index.html#rnao">RNAO</a>
         <a href="index.html#bpso">BPSO</a>
-        <a href="comites.html">Comité</a>
+        <a href="comites.html">Comités</a>
       </nav>
     </div>
   </header>
@@ -41,7 +41,7 @@
         <div>
           <span class="eyebrow">Área protegida</span>
           <h1>Gestión de publicaciones</h1>
-          <p>Panel exclusivo para usuarios autenticados. Desde aquí puedes publicar noticias, capacitaciones y guías de buenas prácticas.</p>
+          <p>Panel exclusivo para usuarios autenticados. Desde aquí puedes publicar noticias, capacitaciones y recursos digitales asociados a los comités BPSO/RNAO.</p>
         </div>
         <div class="publication-session-actions">
           <div id="session-badge" class="session-badge">Verificando sesión...</div>
@@ -128,34 +128,60 @@
             </div>
 
             <div class="content-card full-span">
-              <h3>Publicar guía de buenas prácticas</h3>
-              <form id="guide-form" class="stack-form">
+              <h3>Agregar recurso digital de comité</h3>
+              <form id="resource-form" class="stack-form">
+                <div class="dual-inputs">
+                  <label>
+                    <span>Comité responsable</span>
+                    <select id="resource-committee-select" name="committee_id" required>
+                      <option value="">Cargando comités...</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Guía asociada, opcional</span>
+                    <select id="resource-guide-select" name="guide_id">
+                      <option value="">Cargando guías...</option>
+                    </select>
+                  </label>
+                </div>
                 <label>
-                  <span>Título</span>
+                  <span>Título del recurso</span>
                   <input name="title" type="text" required />
                 </label>
                 <label>
-                  <span>Descripción</span>
-                  <textarea name="description" rows="4"></textarea>
+                  <span>Descripción breve</span>
+                  <textarea name="description" rows="4" placeholder="Ejemplo: infografía, protocolo, pauta de apoyo, material de capacitación o enlace externo."></textarea>
                 </label>
                 <div class="dual-inputs">
                   <label>
-                    <span>Portada / imagen</span>
-                    <input name="cover_image" type="file" accept="image/*" />
+                    <span>Tipo de recurso</span>
+                    <select name="resource_type" required>
+                      <option value="file">Archivo general</option>
+                      <option value="pdf">PDF</option>
+                      <option value="document">Documento Word</option>
+                      <option value="presentation">Presentación</option>
+                      <option value="image">Imagen</option>
+                      <option value="video">Video</option>
+                      <option value="link">Enlace externo</option>
+                    </select>
                   </label>
                   <label>
-                    <span>Archivo PDF o documento</span>
-                    <input name="pdf_file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx" required />
+                    <span>Archivo</span>
+                    <input name="resource_file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.mp4,.mov,.zip" />
                   </label>
                 </div>
-                <div class="publication-action-box" role="group" aria-label="Acción para guía">
+                <label>
+                  <span>Enlace externo, opcional</span>
+                  <input name="external_url" type="url" placeholder="https://..." />
+                </label>
+                <div class="publication-action-box" role="group" aria-label="Acción para recurso digital">
                   <span class="publication-action-label">Acción de publicación</span>
                   <div class="publication-action-buttons">
                     <button class="btn btn-secondary" type="submit" name="status" value="draft">Guardar borrador</button>
                     <button class="btn btn-primary" type="submit" name="status" value="published">Publicar</button>
                   </div>
                 </div>
-                <p class="field-help">Portada recomendada: formato vertical 3:4. Usar nombres simples, sin tildes ni caracteres especiales.</p>
+                <p class="field-help">Puedes adjuntar un archivo, ingresar un enlace externo o usar ambos. Los archivos se guardan en el bucket <strong>bpso-resources</strong>.</p>
               </form>
             </div>
           </div>
@@ -179,8 +205,8 @@
                 <div id="admin-trainings-list" class="admin-content-list">Cargando capacitaciones...</div>
               </div>
               <div class="admin-content-column">
-                <h3>Guías</h3>
-                <div id="admin-guides-list" class="admin-content-list">Cargando guías...</div>
+                <h3>Recursos digitales</h3>
+                <div id="admin-resources-list" class="admin-content-list">Cargando recursos...</div>
               </div>
             </div>
           </div>
@@ -205,6 +231,7 @@
       </div>
     </div>
   </footer>
+  <script src="supabase-config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

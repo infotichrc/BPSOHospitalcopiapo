@@ -30,7 +30,7 @@
         <a href="capacitaciones.html">Capacitaciones</a>
         <a href="index.html#rnao">RNAO</a>
         <a href="index.html#bpso">BPSO</a>
-        <a href="comites.html" class="active">Comité</a>
+        <a href="comites.html" class="active">Comités</a>
       </nav>
     </div>
   </header>
@@ -48,42 +48,9 @@
     </section>
 
     <section class="section">
-      <div class="container committee-grid">
-        <article class="committee-card featured-committee">
-          <span class="eyebrow">Comité principal</span>
-          <h2>Comité de Implementación</h2>
-          <p>
-            Equipo responsable de coordinar, planificar y dar seguimiento al proceso de implementación del programa RNAO/BPSO
-            en el Hospital Regional de Copiapó, articulando el trabajo de los servicios, unidades y champions participantes.
-          </p>
-          <p class="muted-note">
-            Este apartado puede completarse posteriormente con integrantes, cargos, unidades representadas, actas o documentos oficiales.
-          </p>
-        </article>
-
-        <article class="committee-card">
-          <span class="eyebrow">Guía de buena práctica 01</span>
-          <h3>Comité asociado a guía 1</h3>
-          <p>
-            Comité específico asociado a la primera guía de buenas prácticas. Pendiente de nombre oficial, integrantes y documentos de respaldo.
-          </p>
-        </article>
-
-        <article class="committee-card">
-          <span class="eyebrow">Guía de buena práctica 02</span>
-          <h3>Comité asociado a guía 2</h3>
-          <p>
-            Comité específico asociado a la segunda guía de buenas prácticas. Pendiente de nombre oficial, integrantes y documentos de respaldo.
-          </p>
-        </article>
-
-        <article class="committee-card">
-          <span class="eyebrow">Guía de buena práctica 03</span>
-          <h3>Comité asociado a guía 3</h3>
-          <p>
-            Comité específico asociado a la tercera guía de buenas prácticas. Pendiente de nombre oficial, integrantes y documentos de respaldo.
-          </p>
-        </article>
+      <div class="container">
+        <div id="committees-grid" class="committee-grid dynamic-committee-grid"></div>
+        <p id="committees-empty" class="empty-state show">Aún no hay comités publicados.</p>
       </div>
     </section>
   </main>
@@ -105,6 +72,7 @@
     </div>
   </footer>
 
+  <script src="supabase-config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
