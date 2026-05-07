@@ -828,3 +828,369 @@ select:focus{
 @media (max-width:1024px){
   .committee-card-dynamic.featured-committee{grid-template-columns:none}
 }
+
+/* ============================================================
+   FIX RESPONSIVE INDEX / MOBILE QR
+   Objetivo: evitar desbordes horizontales en celulares y mejorar
+   la lectura inicial del index sin afectar la vista de escritorio.
+   ============================================================ */
+html,
+body{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+main,
+section,
+.site-header,
+.site-footer,
+.container,
+.nav-wrap,
+.content-grid,
+.content-card,
+.section-title,
+.section-title-small,
+.hero-content,
+.hero-actions,
+.featured-card,
+.card,
+.footer-grid{
+  min-width:0;
+}
+
+.hero-content > *,
+.content-card > *,
+.section-title > *,
+.section-title-small > *,
+.card-body > *,
+.featured-body > *,
+.footer-grid > *{
+  max-width:100%;
+}
+
+.hero-badge,
+.eyebrow{
+  width:fit-content;
+  max-width:100%;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:normal;
+  line-height:1.35;
+}
+
+.hero-home h1,
+.section-title h2,
+.section-title-small h2,
+.content-card h3,
+.card h3,
+.featured-body h3,
+.brand-copy strong,
+.brand-copy small{
+  overflow-wrap:anywhere;
+}
+
+.brand{
+  flex:1 1 auto;
+  min-width:0;
+}
+.brand-copy{
+  min-width:0;
+}
+.menu-toggle{
+  flex:0 0 auto;
+}
+.hero-home{
+  width:100%;
+  overflow:hidden;
+}
+.hero-actions .btn{
+  white-space:normal;
+  text-align:center;
+}
+
+@media (max-width: 860px){
+  :root{--header-height:78px}
+  .nav-wrap{
+    gap:12px;
+  }
+  .site-nav{
+    max-width:calc(100vw - 32px);
+    overflow-wrap:anywhere;
+  }
+  .hero-home{
+    min-height:auto;
+    background-position:center top;
+  }
+  .hero-content{
+    min-height:auto;
+    padding:58px 0 78px;
+    justify-content:center;
+  }
+  .hero-badge{
+    font-size:.82rem;
+    padding:8px 12px;
+    border-radius:18px;
+  }
+  .hero-home h1{
+    font-size:clamp(2rem, 10.5vw, 3rem);
+    line-height:1.06;
+    letter-spacing:-.02em;
+  }
+  .hero-home p{
+    font-size:1rem;
+    line-height:1.65;
+  }
+  .section{
+    padding:42px 0;
+  }
+  .content-card{
+    padding:24px;
+  }
+  .section-title h2,
+  .section-title-small h2{
+    line-height:1.12;
+  }
+}
+
+@media (max-width: 640px){
+  :root{--header-height:76px}
+  .container{
+    width:min(100% - 24px, 1180px);
+  }
+  .nav-wrap{
+    min-height:var(--header-height);
+  }
+  .brand-logo{
+    width:56px;
+    height:56px;
+    border-radius:14px;
+    padding:5px;
+  }
+  .brand-copy{
+    gap:0;
+  }
+  .brand-copy strong{
+    font-size:.98rem;
+    line-height:1.15;
+  }
+  .brand-copy small{
+    font-size:.82rem;
+    line-height:1.25;
+  }
+  .menu-toggle{
+    width:48px;
+    height:48px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+    border-radius:14px;
+  }
+  .site-nav{
+    top:calc(var(--header-height) - 2px);
+    left:12px;
+    right:12px;
+  }
+  .hero-content{
+    padding:44px 0 68px;
+    gap:15px;
+  }
+  .hero-badge{
+    font-size:.78rem;
+    line-height:1.3;
+    max-width:100%;
+  }
+  .hero-home h1{
+    font-size:clamp(1.95rem, 10vw, 2.55rem);
+    max-width:100%;
+  }
+  .hero-home p{
+    max-width:100%;
+    font-size:.98rem;
+  }
+  .hero-actions{
+    width:100%;
+  }
+  .hero-actions .btn{
+    width:100%;
+    min-height:54px;
+    padding:0 18px;
+  }
+  .section{
+    padding:36px 0;
+  }
+  .content-grid{
+    gap:18px;
+  }
+  .content-card,
+  .info-card,
+  .cta-card,
+  .committee-card,
+  .login-card,
+  .reset-card{
+    border-radius:20px;
+    padding:22px;
+  }
+  .content-card p,
+  .info-card p,
+  .modal-text{
+    line-height:1.72;
+  }
+  .section-title h2,
+  .section-title-small h2{
+    font-size:clamp(1.65rem, 8vw, 2.15rem);
+  }
+  .guides-inline{
+    margin-top:22px;
+    padding-top:20px;
+  }
+  .compact-guides{
+    gap:14px!important;
+  }
+  .footer-grid{
+    gap:18px;
+  }
+}
+
+@media (max-width: 390px){
+  .container{
+    width:min(100% - 20px, 1180px);
+  }
+  .brand{
+    gap:10px;
+  }
+  .brand-logo{
+    width:52px;
+    height:52px;
+  }
+  .brand-copy strong{
+    font-size:.92rem;
+  }
+  .brand-copy small{
+    font-size:.76rem;
+  }
+  .hero-home h1{
+    font-size:clamp(1.8rem, 9.5vw, 2.35rem);
+  }
+  .content-card,
+  .info-card,
+  .cta-card{
+    padding:20px;
+  }
+}
+
+
+/* ============================================================
+   HERO HOME MOBILE - OVERLAY EQUILIBRADO
+   Mantiene el diseño original imagen + texto sobre la imagen.
+   Solo aplica en celular; escritorio queda igual.
+   ============================================================ */
+@media (max-width: 768px){
+  .hero-home{
+    min-height:calc(100svh - var(--header-height)) !important;
+    padding-top:0 !important;
+    overflow:hidden;
+    background-image:
+      linear-gradient(180deg,
+        rgba(5,18,10,.03) 0%,
+        rgba(5,18,10,.12) 26%,
+        rgba(5,18,10,.52) 56%,
+        rgba(5,18,10,.91) 100%),
+      url('assets/hero-rnao.jpg') !important;
+    background-repeat:no-repeat !important;
+    background-size:cover !important;
+    background-position:center, 80% 20% !important;
+  }
+
+  .hero-home::before,
+  .hero-home::after{
+    content:none !important;
+    display:none !important;
+  }
+
+  .hero-content{
+    min-height:calc(100svh - var(--header-height)) !important;
+    padding:clamp(210px, 37svh, 330px) 0 30px !important;
+    justify-content:flex-end !important;
+    gap:12px !important;
+    color:#fff;
+  }
+
+  .hero-badge{
+    max-width:100%;
+    padding:7px 12px !important;
+    border-radius:999px !important;
+    font-size:.72rem !important;
+    line-height:1.22 !important;
+    background:rgba(255,255,255,.92) !important;
+    color:var(--primary-dark) !important;
+    box-shadow:0 10px 26px rgba(0,0,0,.16) !important;
+  }
+
+  .hero-home h1{
+    max-width:100%;
+    font-size:clamp(1.85rem, 8.4vw, 2.45rem) !important;
+    line-height:1.04 !important;
+    letter-spacing:-.035em;
+    text-wrap:balance;
+    text-shadow:0 12px 30px rgba(0,0,0,.38);
+  }
+
+  .hero-home p{
+    max-width:100%;
+    font-size:.93rem !important;
+    line-height:1.52 !important;
+    color:rgba(255,255,255,.93) !important;
+    text-shadow:0 8px 22px rgba(0,0,0,.42);
+  }
+
+  .hero-actions{
+    width:100%;
+    margin-top:6px !important;
+  }
+
+  .hero-actions .btn{
+    width:100%;
+    min-height:50px !important;
+    border-radius:14px !important;
+    font-size:.96rem !important;
+    box-shadow:0 14px 30px rgba(0,0,0,.16);
+  }
+}
+
+@media (max-width: 430px){
+  .hero-content{
+    padding-top:clamp(190px, 35svh, 285px) !important;
+    padding-bottom:26px !important;
+    gap:11px !important;
+  }
+
+  .hero-home h1{
+    font-size:clamp(1.68rem, 8vw, 2.08rem) !important;
+  }
+
+  .hero-home p{
+    font-size:.88rem !important;
+    line-height:1.48 !important;
+  }
+
+  .hero-badge{
+    font-size:.68rem !important;
+    padding:6px 10px !important;
+  }
+}
+
+@media (max-width: 360px){
+  .hero-home h1{
+    font-size:1.55rem !important;
+  }
+
+  .hero-home p{
+    font-size:.84rem !important;
+  }
+
+  .hero-actions .btn{
+    min-height:48px !important;
+  }
+}
